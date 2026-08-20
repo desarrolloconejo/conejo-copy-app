@@ -17,6 +17,7 @@ import {
   normalizeEmail,
   setUserActive,
   setUserPassword,
+  setUserRole,
   touchLastSignedIn,
   upsertCopyResult,
 } from "./db";
@@ -198,6 +199,35 @@ export const appRouter = router({
       // Shown once to the admin: it is never stored in readable form.
       return { user: created ? publicUser(created) : null, temporaryPassword };
     }),
+    setRole: adminProcedure
+      .input(z.object({ id: z.number().int().positive(), role: z.enum(["user", "admin"]) }))
+      .mutation(async ({ ctx, input }) => {
+        if (input.id === ctx.user.id) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "No puedes cambiar tu propio rol",
+          });
+        }
+        const target = await getUserById(input.id);
+        if (!target) throw new TRPCError({ code: "NOT_FOUND" });
+
+        // Losing the last administrator would leave the app manageable only
+        // from the server console.
+        if (target.role === "admin" && target.isActive && input.role === "user") {
+          const admins = (await listUsers()).filter(
+            item => item.role === "admin" && item.isActive
+          );
+          if (admins.length <= 1) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Debe quedar al menos una cuenta de administración activa",
+            });
+          }
+        }
+
+        const updated = await setUserRole(input.id, input.role);
+        return updated ? publicUser(updated) : null;
+      }),
     setActive: adminProcedure
       .input(z.object({ id: z.number().int().positive(), isActive: z.boolean() }))
       .mutation(async ({ ctx, input }) => {

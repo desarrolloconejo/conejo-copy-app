@@ -91,6 +91,12 @@ export async function setUserActive(id: number, isActive: boolean) {
   return getUserById(id);
 }
 
+export async function setUserRole(id: number, role: "user" | "admin") {
+  const db = await requireDb();
+  await db.update(users).set({ role }).where(eq(users.id, id));
+  return getUserById(id);
+}
+
 export async function setUserPassword(
   id: number,
   passwordHash: string,

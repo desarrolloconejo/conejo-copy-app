@@ -4,7 +4,9 @@ import type { TrpcContext } from "./_core/context";
 
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 
-function userRecord(overrides: Partial<AuthenticatedUser> = {}): AuthenticatedUser {
+function userRecord(
+  overrides: Partial<AuthenticatedUser> = {}
+): AuthenticatedUser {
   return {
     id: 1,
     email: "redaccion@example.com",
@@ -23,8 +25,15 @@ function userRecord(overrides: Partial<AuthenticatedUser> = {}): AuthenticatedUs
 function contextFor(user: AuthenticatedUser | null): TrpcContext {
   return {
     user,
-    req: { protocol: "https", headers: {}, ip: "127.0.0.1" } as TrpcContext["req"],
-    res: { clearCookie: () => undefined, cookie: () => undefined } as unknown as TrpcContext["res"],
+    req: {
+      protocol: "https",
+      headers: {},
+      ip: "127.0.0.1",
+    } as TrpcContext["req"],
+    res: {
+      clearCookie: () => undefined,
+      cookie: () => undefined,
+    } as unknown as TrpcContext["res"],
   };
 }
 
@@ -32,11 +41,19 @@ describe("procedure guards", () => {
   it("keeps the user management router away from non-admin accounts", async () => {
     const caller = appRouter.createCaller(contextFor(userRecord()));
 
-    await expect(caller.users.list()).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(caller.users.list()).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    });
     await expect(
-      caller.users.create({ email: "nuevo@example.com", name: "Nuevo", role: "user" })
+      caller.users.create({
+        email: "nuevo@example.com",
+        name: "Nuevo",
+        role: "user",
+      })
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
-    await expect(caller.users.setActive({ id: 2, isActive: false })).rejects.toMatchObject({
+    await expect(
+      caller.users.setActive({ id: 2, isActive: false })
+    ).rejects.toMatchObject({
       code: "FORBIDDEN",
     });
     await expect(caller.users.resetPassword({ id: 2 })).rejects.toMatchObject({
@@ -47,24 +64,65 @@ describe("procedure guards", () => {
   it("keeps the user management router away from anonymous callers", async () => {
     const caller = appRouter.createCaller(contextFor(null));
 
-    await expect(caller.users.list()).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(caller.users.list()).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    });
   });
 
   it("rejects anonymous access to the working data", async () => {
     const caller = appRouter.createCaller(contextFor(null));
 
-    await expect(caller.clients.list()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
-    await expect(caller.copyHistory.list()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
-    await expect(caller.trendReferences.list()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
-    await expect(caller.auditRules.list()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    await expect(caller.clients.list()).rejects.toMatchObject({
+      code: "UNAUTHORIZED",
+    });
+    await expect(caller.copyHistory.list()).rejects.toMatchObject({
+      code: "UNAUTHORIZED",
+    });
+    await expect(caller.trendReferences.list()).rejects.toMatchObject({
+      code: "UNAUTHORIZED",
+    });
+    await expect(caller.auditRules.list()).rejects.toMatchObject({
+      code: "UNAUTHORIZED",
+    });
   });
 
   it("stops an admin from locking themselves out", async () => {
-    const admin = userRecord({ id: 7, role: "admin", email: "admin@example.com" });
+    const admin = userRecord({
+      id: 7,
+      role: "admin",
+      email: "admin@example.com",
+    });
     const caller = appRouter.createCaller(contextFor(admin));
 
-    await expect(caller.users.setActive({ id: 7, isActive: false })).rejects.toMatchObject({
+    await expect(
+      caller.users.setActive({ id: 7, isActive: false })
+    ).rejects.toMatchObject({
       code: "BAD_REQUEST",
+    });
+  });
+
+  it("stops an admin from changing their own role", async () => {
+    const admin = userRecord({
+      id: 7,
+      role: "admin",
+      email: "admin@example.com",
+    });
+    const caller = appRouter.createCaller(contextFor(admin));
+
+    await expect(
+      caller.users.setRole({ id: 7, role: "user" })
+    ).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    });
+  });
+
+  it("keeps role changes away from non-admin accounts", async () => {
+    const caller = appRouter.createCaller(contextFor(userRecord()));
+
+    await expect(
+      caller.users.setRole({ id: 2, role: "admin" })
+    ).rejects.toMatchObject({
+      code: "FORBIDDEN",
     });
   });
 
