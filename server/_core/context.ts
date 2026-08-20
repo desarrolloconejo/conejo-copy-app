@@ -1,6 +1,7 @@
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import type { User } from "../../drizzle/schema";
-import { sdk } from "./sdk";
+import { getUserById } from "../db";
+import { readSessionToken, verifySession } from "./session";
 
 export type TrpcContext = {
   req: CreateExpressContextOptions["req"];
@@ -14,9 +15,17 @@ export async function createContext(
   let user: User | null = null;
 
   try {
-    user = await sdk.authenticateRequest(opts.req);
+    const session = await verifySession(readSessionToken(opts.req));
+    if (session) {
+      const found = await getUserById(session.uid);
+      // A deactivated account keeps its data but loses access immediately,
+      // without waiting for the token to expire.
+      if (found && found.isActive) user = found;
+    }
   } catch (error) {
-    // Authentication is optional for public procedures.
+    // Authentication is optional for public procedures; a database hiccup
+    // must not turn every request into a 500.
+    console.warn("[Auth] Could not resolve session:", error);
     user = null;
   }
 

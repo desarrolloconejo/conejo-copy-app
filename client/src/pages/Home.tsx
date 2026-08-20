@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState, type ReactNode } from "react";
-import { startLogin } from "@/const";
+import { LOGIN_PATH } from "@/const";
+import { Link } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -186,7 +187,10 @@ const formatField = (label: string, value: string) =>
   `${label.padEnd(23, " ")}${value || "—"}`;
 
 export default function Home() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
+  const goToLogin = () => {
+    window.location.href = LOGIN_PATH;
+  };
   const utils = trpc.useUtils();
   const [mobileNav, setMobileNav] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
@@ -356,7 +360,7 @@ export default function Home() {
   const ensureAuth = () => {
     if (!isAuthenticated) {
       toast.info("Inicia sesión para guardar información del equipo.");
-      startLogin();
+      goToLogin();
       return false;
     }
     return true;
@@ -579,15 +583,24 @@ export default function Home() {
               <span className="hidden rounded-full bg-[#e9f0f3] px-3 py-1.5 text-xs text-[#315166] sm:block">
                 Umbral de paso: {PASS_SCORE}
               </span>
-              {!isAuthenticated && (
-                <Button
-                  onClick={startLogin}
-                  variant="outline"
-                  className="rounded-full text-xs"
+              {user?.role === "admin" && (
+                <Link
+                  href="/usuarios"
+                  className="hidden rounded-full border border-[#dfd7dc] px-3 py-1.5 text-xs font-semibold text-[#315166] hover:border-[#602249] hover:text-[#602249] sm:block"
                 >
-                  Iniciar sesión
-                </Button>
+                  Usuarios
+                </Link>
               )}
+              <Button
+                onClick={() => {
+                  void logout().finally(goToLogin);
+                }}
+                variant="outline"
+                className="rounded-full text-xs"
+                title={user?.email ?? undefined}
+              >
+                Salir
+              </Button>
               <Button
                 onClick={() =>
                   document
@@ -1060,7 +1073,7 @@ export default function Home() {
                   setHasAudited(false);
                   document.getElementById("canvas")?.scrollIntoView({ behavior: "smooth" });
                 }}
-                onLogin={startLogin}
+                onLogin={goToLogin}
               />
               <div className="my-8 border-t border-[#e7eef1]" />
               <p className="eyebrow text-[#617381]">Territorio · elige uno</p>
@@ -1539,7 +1552,7 @@ export default function Home() {
             }}
             saving={saveResult.isPending}
             isAuthenticated={isAuthenticated}
-            onLogin={startLogin}
+            onLogin={goToLogin}
           />
           <RulesSection
             clients={clientsQuery.data ?? []}
@@ -1548,7 +1561,7 @@ export default function Home() {
             setDraft={setRuleDraft}
             saving={createRule.isPending}
             isAuthenticated={isAuthenticated}
-            onLogin={startLogin}
+            onLogin={goToLogin}
             createRule={() => {
               if (!ensureAuth()) return;
               if (!ruleDraft.label) return toast.error("Nombra la regla.");

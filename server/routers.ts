@@ -1,19 +1,32 @@
 import { COOKIE_NAME } from "@shared/const";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
   createAuditRule,
   createClient,
   createCopyRecord,
+  createTrendReference,
+  createUser,
+  getUserByEmail,
+  getUserById,
   listClientsByOwner,
   listCopyHistory,
   listRulesByOwner,
   listTrendReferences,
+  listUsers,
+  normalizeEmail,
+  setUserActive,
+  setUserPassword,
+  touchLastSignedIn,
   upsertCopyResult,
-  createTrendReference,
 } from "./db";
+import { generateTemporaryPassword, hashPassword, verifyPassword } from "./auth/password";
+import { recordFailure, recordSuccess, retryAfterMs } from "./auth/rateLimit";
 import { getSessionCookieOptions } from "./_core/cookies";
+import { ENV } from "./_core/env";
+import { signSession } from "./_core/session";
 import { systemRouter } from "./_core/systemRouter";
-import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 
 const clientInput = z.object({ name: z.string().trim().min(2).max(120), sector: z.string().trim().min(2).max(120) });
 const ruleInput = z.object({
@@ -62,11 +75,89 @@ const trendReferenceInput = z.object({
   tags: z.string().trim().max(500),
 });
 
+const credentialsInput = z.object({
+  email: z.string().trim().email().max(320),
+  password: z.string().min(1).max(200),
+});
+const newUserInput = z.object({
+  email: z.string().trim().email().max(320),
+  name: z.string().trim().min(2).max(160),
+  role: z.enum(["user", "admin"]),
+});
+const passwordChangeInput = z.object({
+  currentPassword: z.string().min(1).max(200),
+  newPassword: z.string().min(10, "La contraseña nueva necesita al menos 10 caracteres").max(200),
+});
+
+/** Never reveals which half of the pair was wrong. */
+const INVALID_CREDENTIALS = "Email o contraseña incorrectos";
+
+/**
+ * A well-formed digest that no password matches, used to keep the timing of a
+ * missing account close to that of a wrong password.
+ */
+const DUMMY_HASH =
+  "scrypt$32768$8$1$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+
+/** Strips the digest before a user record ever leaves the server. */
+function publicUser<T extends { passwordHash?: string }>(user: T) {
+  const { passwordHash: _passwordHash, ...rest } = user;
+  return rest;
+}
+
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
   auth: router({
-    me: publicProcedure.query(opts => opts.ctx.user),
+    me: publicProcedure.query(opts => (opts.ctx.user ? publicUser(opts.ctx.user) : null)),
+    login: publicProcedure.input(credentialsInput).mutation(async ({ ctx, input }) => {
+      const email = normalizeEmail(input.email);
+      // Keyed by account and by source address, so neither a single account nor
+      // a single origin can be hammered.
+      const keys = ["email:" + email, "ip:" + (ctx.req.ip ?? "unknown")];
+      const waitMs = Math.max(...keys.map(key => retryAfterMs(key)));
+      if (waitMs > 0) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message:
+            "Demasiados intentos. Vuelve a probar en " +
+            Math.ceil(waitMs / 1000) +
+            " segundos.",
+        });
+      }
+
+      const user = await getUserByEmail(email);
+      const registerFailure = () => {
+        keys.forEach(key => recordFailure(key));
+        return new TRPCError({ code: "UNAUTHORIZED", message: INVALID_CREDENTIALS });
+      };
+
+      if (!user) {
+        // Hash anyway so a missing account does not answer faster than a wrong
+        // password and become enumerable by timing.
+        await verifyPassword(input.password, DUMMY_HASH);
+        throw registerFailure();
+      }
+      if (!(await verifyPassword(input.password, user.passwordHash))) throw registerFailure();
+      if (!user.isActive) {
+        keys.forEach(key => recordFailure(key));
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Esta cuenta está desactivada. Habla con un administrador.",
+        });
+      }
+
+      keys.forEach(key => recordSuccess(key));
+      await touchLastSignedIn(user.id);
+
+      const token = await signSession({ uid: user.id, name: user.name });
+      ctx.res.cookie(COOKIE_NAME, token, {
+        ...getSessionCookieOptions(ctx.req),
+        maxAge: ENV.sessionTtlMs,
+      });
+
+      return publicUser({ ...user, lastSignedIn: new Date() });
+    }),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
@@ -74,6 +165,60 @@ export const appRouter = router({
         success: true,
       } as const;
     }),
+    changePassword: protectedProcedure
+      .input(passwordChangeInput)
+      .mutation(async ({ ctx, input }) => {
+        const current = await getUserById(ctx.user.id);
+        if (!current) throw new TRPCError({ code: "UNAUTHORIZED" });
+        if (!(await verifyPassword(input.currentPassword, current.passwordHash))) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "La contraseña actual no es correcta",
+          });
+        }
+        await setUserPassword(ctx.user.id, await hashPassword(input.newPassword), false);
+        return { success: true } as const;
+      }),
+  }),
+  users: router({
+    list: adminProcedure.query(() => listUsers()),
+    create: adminProcedure.input(newUserInput).mutation(async ({ input }) => {
+      const existing = await getUserByEmail(input.email);
+      if (existing) {
+        throw new TRPCError({ code: "CONFLICT", message: "Ya existe una cuenta con ese email" });
+      }
+      const temporaryPassword = generateTemporaryPassword();
+      const created = await createUser({
+        email: input.email,
+        name: input.name,
+        role: input.role,
+        passwordHash: await hashPassword(temporaryPassword),
+        mustChangePassword: true,
+      });
+      // Shown once to the admin: it is never stored in readable form.
+      return { user: created ? publicUser(created) : null, temporaryPassword };
+    }),
+    setActive: adminProcedure
+      .input(z.object({ id: z.number().int().positive(), isActive: z.boolean() }))
+      .mutation(async ({ ctx, input }) => {
+        if (input.id === ctx.user.id && !input.isActive) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "No puedes desactivar tu propia cuenta",
+          });
+        }
+        const updated = await setUserActive(input.id, input.isActive);
+        return updated ? publicUser(updated) : null;
+      }),
+    resetPassword: adminProcedure
+      .input(z.object({ id: z.number().int().positive() }))
+      .mutation(async ({ input }) => {
+        const target = await getUserById(input.id);
+        if (!target) throw new TRPCError({ code: "NOT_FOUND" });
+        const temporaryPassword = generateTemporaryPassword();
+        await setUserPassword(input.id, await hashPassword(temporaryPassword), true);
+        return { temporaryPassword };
+      }),
   }),
   clients: router({
     list: protectedProcedure.query(({ ctx }) => listClientsByOwner(ctx.user.id)),

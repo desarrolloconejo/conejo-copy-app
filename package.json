@@ -5,12 +5,13 @@
   "license": "MIT",
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsx watch server/_core/index.ts",
-    "build": "vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "build": "vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/index.js && esbuild server/admin.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/admin.js",
     "start": "cross-env NODE_ENV=production node dist/index.js",
     "check": "tsc --noEmit",
     "format": "prettier --write .",
     "test": "vitest run",
-    "db:push": "drizzle-kit generate && drizzle-kit migrate"
+    "db:push": "drizzle-kit generate && drizzle-kit migrate",
+    "create-admin": "tsx server/admin.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -44,7 +45,6 @@
     "@trpc/client": "^11.6.0",
     "@trpc/react-query": "^11.6.0",
     "@trpc/server": "^11.6.0",
-    "axios": "^1.12.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -103,5 +103,8 @@
     "overrides": {
       "tailwindcss>nanoid": "3.3.7"
     }
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

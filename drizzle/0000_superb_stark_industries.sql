@@ -62,18 +62,34 @@ CREATE TABLE `copyResults` (
 	CONSTRAINT `copyResults_copyRecordId_unique` UNIQUE(`copyRecordId`)
 );
 --> statement-breakpoint
-CREATE TABLE `users` (
+CREATE TABLE `trendReferences` (
 	`id` int AUTO_INCREMENT NOT NULL,
-	`openId` varchar(64) NOT NULL,
-	`name` text,
-	`email` varchar(320),
-	`loginMethod` varchar(64),
-	`role` enum('user','admin') NOT NULL DEFAULT 'user',
+	`ownerId` int NOT NULL,
+	`spoken` text NOT NULL,
+	`insertTitle` varchar(250),
+	`platform` varchar(40) NOT NULL,
+	`territory` varchar(60) NOT NULL,
+	`sourceUrl` varchar(1000),
+	`insight` text NOT NULL,
+	`tags` varchar(500) NOT NULL DEFAULT '',
 	`createdAt` timestamp NOT NULL DEFAULT (now()),
 	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
-	`lastSignedIn` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `trendReferences_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `users` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`email` varchar(320) NOT NULL,
+	`passwordHash` varchar(255) NOT NULL,
+	`name` varchar(160) NOT NULL,
+	`role` enum('user','admin') NOT NULL DEFAULT 'user',
+	`isActive` boolean NOT NULL DEFAULT true,
+	`mustChangePassword` boolean NOT NULL DEFAULT false,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`lastSignedIn` timestamp,
 	CONSTRAINT `users_id` PRIMARY KEY(`id`),
-	CONSTRAINT `users_openId_unique` UNIQUE(`openId`)
+	CONSTRAINT `users_email_unique` UNIQUE(`email`)
 );
 --> statement-breakpoint
 ALTER TABLE `auditRules` ADD CONSTRAINT `auditRules_ownerId_users_id_fk` FOREIGN KEY (`ownerId`) REFERENCES `users`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -81,4 +97,5 @@ ALTER TABLE `auditRules` ADD CONSTRAINT `auditRules_clientId_clients_id_fk` FORE
 ALTER TABLE `clients` ADD CONSTRAINT `clients_ownerId_users_id_fk` FOREIGN KEY (`ownerId`) REFERENCES `users`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `copyRecords` ADD CONSTRAINT `copyRecords_ownerId_users_id_fk` FOREIGN KEY (`ownerId`) REFERENCES `users`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `copyRecords` ADD CONSTRAINT `copyRecords_clientId_clients_id_fk` FOREIGN KEY (`clientId`) REFERENCES `clients`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `copyResults` ADD CONSTRAINT `copyResults_copyRecordId_copyRecords_id_fk` FOREIGN KEY (`copyRecordId`) REFERENCES `copyRecords`(`id`) ON DELETE cascade ON UPDATE no action;
+ALTER TABLE `copyResults` ADD CONSTRAINT `copyResults_copyRecordId_copyRecords_id_fk` FOREIGN KEY (`copyRecordId`) REFERENCES `copyRecords`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `trendReferences` ADD CONSTRAINT `trendReferences_ownerId_users_id_fk` FOREIGN KEY (`ownerId`) REFERENCES `users`(`id`) ON DELETE cascade ON UPDATE no action;
