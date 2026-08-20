@@ -1,0 +1,68 @@
+# Ampliación de Conejo Copy Check
+
+- [x] Definir el modelo local de ficha, cliente, resultado y regla personalizada.
+- [x] Crear la experiencia de historial con búsqueda, filtros y registro de resultados reales.
+- [x] Añadir el panel de reglas de auditoría por marca o sector.
+- [x] Implementar exportación de ficha de producción en CSV y PDF imprimible.
+- [x] Validar tipado, interacciones, escritorio y móvil.
+- [x] Probar de forma funcional los flujos de historial, filtros, guardado de resultados, reglas y exportación.
+- [x] Documentar la validación funcional de los nuevos flujos en escritorio y móvil.
+- [x] Verificar con una sesión autenticada la creación de reglas, el guardado de ficha y el registro de resultados reales.
+- [x] Registrar en un archivo de QA los casos verificados, resultados y límites de la prueba autenticada.
+- [x] Inventariar y analizar las correcciones incluidas en el archivo adjunto.
+- [x] Incorporar en la interfaz y los flujos las correcciones aplicables.
+- [x] Validar que las correcciones no afecten historial, reglas ni exportación.
+- [x] Incluir los activos de marca utilizados dentro del proyecto y eliminar la dependencia de rutas manus-storage.
+- [x] Revalidar reglas personalizadas y resultados reales tras la integración del manual completo.
+- [x] Documentar el alcance de la QA posterior a las correcciones.
+- [x] Auditar el flujo actual de la herramienta para el trabajo diario de redactores creativos.
+- [x] Implementar mejoras de productividad y priorización en la experiencia de redacción.
+- [x] Dar de alta Mimesa, Papelon, Dulfit y Gella como clientes.
+- [x] Validar los nuevos flujos de trabajo y la disponibilidad de los clientes.
+- [x] Verificar con sesión autenticada la presencia de Mimesa, Papelon, Dulfit y Gella en la Mesa de producción.
+- [x] Cubrir la selección de cliente y la apertura del Canvas desde la Mesa mediante una prueba de integración.
+- [x] Corregir los identificadores duplicados de las 42 entradas de la biblioteca y cubrirlos con pruebas.
+- [x] Convertir la ausencia de prueba requerida en un fallo duro del auditor y probar ambos escenarios.
+- [x] Empaquetar el símbolo de marca y favicon dentro de la aplicación para despliegues externos.
+- [x] Señalizar las reglas que amplían los límites estándar de voz o rótulo.
+- [x] Validar biblioteca, auditor, activos y reglas tras los arreglos.
+- [x] Verificar funcionalmente los avisos de límite ampliado en Reglas y en el panel de auditoría.
+- [x] Actualizar la QA con evidencia de la validación de reglas ampliadas.
+- [x] No aplicable: validar en navegador los avisos de límite ampliado dentro de Reglas y Auditor; el usuario eligió validación técnica autenticada.
+- [x] Confirmar el registro de QA y ejecutar el cierre final de validación.
+- [x] Cerrar los arreglos mediante la validación técnica autenticada elegida por el usuario.
+- [x] Confirmar por lectura el registro de QA del cierre autenticado.
+- [x] Auditar los estilos insertados por la edición visual automática.
+- [x] Corregir el ancho y desplazamiento de Fundamento sin estilos duplicados o no responsivos.
+- [x] Ajustar el ancho de la tabla de principios y validar escritorio y móvil.
+- [x] Auditar la estructura actual de 01 / Fundamento en escritorio, tablet y móvil.
+- [x] Reorganizar los principios, las capas y la tabla para mejorar la lectura y navegación.
+- [x] Validar Fundamento en los tres breakpoints y comprobar que no haya desbordes.
+- [x] Sustituir la nomenclatura Rótulo por Insert-Titulo en interfaz, ficha y auditor.
+- [x] Añadir Compartidos como objetivo de la pieza y actualizar su criterio operativo.
+- [x] Permitir crear un cliente nuevo directamente desde el selector de producción.
+- [x] Rediseñar el gráfico de retención con hitos de decisión y lectura de caída.
+- [x] Validar nomenclatura, alta de clientes, objetivo y gráfico en los flujos de trabajo.
+- [x] Añadir un cuadro práctico que diferencie Comunidad, Consideración y Acción.
+- [x] Integrar el cuadro junto a la elección de objetivo sin interrumpir el Canvas.
+- [x] Validar el cuadro en escritorio y móvil.
+- [x] Clasificar las secciones explicativas que se convertirán en desplegables.
+- [x] Implementar desplegables accesibles sin colapsar Canvas, Mesa, Historial ni Reglas.
+- [x] Validar la interacción y el diseño responsive de los desplegables.
+- [x] Convertir la introducción La Ventana y su mapa de retención en una explicación desplegable.
+- [x] Ampliar la prueba de interfaz para comprobar la apertura y cierre de cada módulo explicativo.
+- [x] Registrar evidencia responsive de los módulos plegados y abiertos en escritorio y móvil.
+- [x] Confirmar por lectura que la evidencia responsive final quedó documentada en el registro de validación.
+- [x] Sustituir los tres textos de Fundamento por las versiones parafraseadas aprobadas.
+- [x] Validar la nueva redacción de Fundamento en la interfaz y en las pruebas.
+- [x] Definir los campos y criterios de una referencia de hook en tendencia.
+- [x] Crear persistencia y procedimientos protegidos para guardar y listar referencias.
+- [x] Integrar un formulario de carga y una lista filtrable en la biblioteca de hooks modelo.
+- [x] Validar alta, búsqueda, uso como punto de partida y responsive de las referencias.
+- [x] Verificar en navegador que una referencia se encuentre con búsqueda y filtros y complete el Canvas al reutilizarse.
+- [x] Actualizar la QA con la evidencia funcional completa de las referencias.
+- [x] Verificar en navegador autenticado los filtros de plataforma y territorio del banco de referencias.
+- [x] Actualizar la QA con la evidencia explícita de filtrado junto a búsqueda y reutilización.
+- [x] Inventariar el código, migraciones, configuraciones y archivos de soporte que deben incluirse en la exportación.
+- [x] Crear una guía de despliegue propio, configuración de usuarios y variables de entorno sin secretos.
+- [x] Generar un paquete ZIP del proyecto excluyendo secretos, dependencias y artefactos temporales.
