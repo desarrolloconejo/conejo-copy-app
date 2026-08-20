@@ -719,37 +719,27 @@ export default function Home() {
               title="Hook Canvas"
               body="Completa la decisión antes de redactar. Al final genera una ficha que edición puede ejecutar sin interpretar la idea."
             />
-            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_360px]">
+            <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.4fr)_360px]">
               <div className="rounded-[1.5rem] bg-white p-5 surface-shadow sm:p-7">
                 <div className="grid gap-5 md:grid-cols-2">
                   <Field label="Cliente" hint="Necesario para guardar.">
-                    <div className="flex gap-2">
-                      <select
-                        value={clientId}
-                        onChange={e =>
-                          e.target.value === "__new__"
-                            ? openClientCreator()
-                            : setClientId(e.target.value)
-                        }
-                        className="field"
-                      >
-                        <option value="">Selecciona un cliente</option>
-                        {clientsQuery.data?.map(client => (
-                          <option key={client.id} value={client.id}>
-                            {client.name} · {client.sector}
-                          </option>
-                        ))}
-                        <option value="__new__">＋ Añadir cliente nuevo</option>
-                      </select>
-                      <Button
-                        onClick={openClientCreator}
-                        variant="outline"
-                        className="shrink-0 rounded-xl px-3"
-                        aria-label="Añadir cliente nuevo"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <select
+                      value={clientId}
+                      onChange={e =>
+                        e.target.value === "__new__"
+                          ? openClientCreator()
+                          : setClientId(e.target.value)
+                      }
+                      className="field"
+                    >
+                      <option value="">Selecciona un cliente</option>
+                      {clientsQuery.data?.map(client => (
+                        <option key={client.id} value={client.id}>
+                          {client.name} · {client.sector}
+                        </option>
+                      ))}
+                      <option value="__new__">＋ Añadir cliente nuevo</option>
+                    </select>
                   </Field>
                   <Field label="Objetivo" hint={`Métrica: ${detail.metric}`}>
                     <select
@@ -1704,9 +1694,13 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 flex justify-between gap-3">
-        <span className="text-xs font-semibold">{label}</span>
-        <span className="text-right text-[11px] text-[#71818c]">{hint}</span>
+      {/* Baseline alignment plus tabular figures keep the row steady while a
+          live word counter changes width as the user types. */}
+      <span className="mb-2 flex items-baseline justify-between gap-3">
+        <span className="shrink-0 text-xs font-semibold">{label}</span>
+        <span className="min-w-0 text-right text-[11px] text-[#71818c] tabular-nums">
+          {hint}
+        </span>
       </span>
       {children}
     </label>
