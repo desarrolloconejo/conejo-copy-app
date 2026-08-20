@@ -53,18 +53,19 @@ export async function verifyPassword(password: string, stored: string): Promise<
   }
   if (expected.length === 0 || salt.length === 0) return false;
 
-  let derived: Buffer;
-  try {
-    derived = await scrypt(password.normalize("NFKC"), salt, expected.length, {
-      N,
-      r,
-      p,
-      maxmem: maxmemFor(N, r),
-    });
-  } catch {
-    // Malformed cost parameters (e.g. an N that is not a power of two).
-    return false;
-  }
+  // Reject impossible cost parameters up front. Doing it here rather than
+  // catching scrypt's error keeps genuine failures — running out of memory,
+  // for instance — from being reported as a wrong password.
+  const validCost =
+    N > 1 && (N & (N - 1)) === 0 && r > 0 && p > 0 && N < 2 ** 24 && r < 1024 && p < 1024;
+  if (!validCost) return false;
+
+  const derived: Buffer = await scrypt(password.normalize("NFKC"), salt, expected.length, {
+    N,
+    r,
+    p,
+    maxmem: maxmemFor(N, r),
+  });
 
   // Lengths always match here, but timingSafeEqual throws if they ever differ.
   if (derived.length !== expected.length) return false;

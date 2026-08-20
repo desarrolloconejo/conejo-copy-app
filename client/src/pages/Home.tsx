@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState, type ReactNode } from "react";
 import { LOGIN_PATH } from "@/const";
+import { MobileNavDrawer, SidebarBody } from "@/components/AppSidebar";
+import { BrandSymbol } from "@/components/BrandLockup";
 import { Link } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
@@ -140,37 +142,6 @@ const objectives = [
   "Consideración",
   "Acción",
 ];
-/**
- * The sidebar splits by what the destination is for: the five surfaces used to
- * produce a piece, and the manual consulted while producing it. That is the
- * order the product itself argues for — decide first, consult second.
- */
-const navGroups = [
-  {
-    label: "Trabajo",
-    items: [
-      ["Hoy", "#hoy", Play],
-      ["Canvas", "#canvas", PenLine],
-      ["Auditor", "#auditor", Gauge],
-      ["Historial", "#historial", History],
-      ["Reglas", "#reglas", Settings2],
-    ],
-  },
-  {
-    label: "Manual",
-    items: [
-      ["Fundamento", "#fundamento", Target],
-      ["Territorios", "#territorios", Sparkles],
-      ["Biblioteca", "#biblioteca", LayoutTemplate],
-      ["Visual", "#visual", Eye],
-      ["Cementerio", "#cementerio", CircleAlert],
-      ["Números", "#numeros", FileSpreadsheet],
-      ["Protocolo", "#protocolo", ClipboardCheck],
-      ["Fuentes", "#fuentes", FileText],
-    ],
-  },
-];
-const nav = navGroups.flatMap(group => group.items);
 export const foundationCards = [
   {
     code: "01 / CAPTAR ATENCIÓN",
@@ -209,6 +180,13 @@ export default function Home() {
   const goToLogin = () => {
     window.location.href = LOGIN_PATH;
   };
+  const closeMobileNav = () => setMobileNav(false);
+  const handleLogout = () => {
+    void logout().finally(goToLogin);
+  };
+  const sidebarUser = user
+    ? { name: user.name, email: user.email, role: user.role }
+    : null;
   const utils = trpc.useUtils();
   const [mobileNav, setMobileNav] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
@@ -540,90 +518,24 @@ export default function Home() {
     <div className="min-h-screen bg-[#f7f4f2] text-[#051a2a] lg:flex">
       <aside className="sticky top-0 z-40 hidden h-screen w-[258px] shrink-0 flex-col overflow-hidden bg-[#321327] px-5 py-6 text-white lg:flex">
         <div className="window-arcs pointer-events-none absolute inset-0 opacity-80" />
-
-        <div className="relative shrink-0">
-          <BrandMark />
-        </div>
-
-        <nav className="nav-scroll nav-fade relative mt-7 min-h-0 flex-1 space-y-5 overflow-y-auto pr-1">
-          {navGroups.map(group => (
-            <div key={group.label}>
-              <p className="mb-1.5 px-3 text-[.62rem] font-semibold tracking-[.18em] text-[#fae890]/70 uppercase">
-                {group.label}
-              </p>
-              <div className="space-y-0.5">
-                {group.items.map(([label, href, Icon]) => {
-                  const NavIcon = Icon as typeof PenLine;
-                  return (
-                    <a
-                      key={label as string}
-                      href={href as string}
-                      onClick={() => openExplanation(href as string)}
-                      className="flex items-center gap-3 rounded-lg px-3 py-1.5 text-xs text-white/80 transition hover:bg-white/10 hover:text-white"
-                    >
-                      <NavIcon className="h-3.5 w-3.5 shrink-0 text-[#fae890]" />
-                      {label as string}
-                    </a>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </nav>
-
-        <div className="relative mt-4 shrink-0 space-y-3">
-          <div className="rounded-xl border border-white/10 bg-white/7 px-3.5 py-3">
-            <div className="mb-2 flex items-baseline justify-between gap-2">
-              <span className="text-[.62rem] font-semibold tracking-[.18em] text-white/70 uppercase">
-                Filtro de calidad
-              </span>
-              <span className="text-xs font-semibold text-[#fae890] tabular-nums">
-                {progress}/9
-              </span>
-            </div>
-            <div className="h-1 overflow-hidden rounded-full bg-white/15">
-              <div
-                className="h-full bg-[#fae890] transition-all"
-                style={{ width: `${(progress / 9) * 100}%` }}
-              />
-            </div>
-            <p className="mt-2 text-[.7rem] leading-4 text-white/70">
-              {progress === 9
-                ? "Las nueve marcadas. Puede pasar a producción."
-                : `Faltan ${9 - progress} para pasar a producción.`}
-            </p>
-          </div>
-
-          <div className="border-t border-white/10 pt-3">
-            <p className="truncate px-1 text-xs font-semibold" title={user?.email ?? undefined}>
-              {user?.name ?? "—"}
-            </p>
-            <p className="mb-2 truncate px-1 text-[.68rem] text-white/55">
-              {user?.role === "admin" ? "Administración" : "Redacción"}
-            </p>
-            <div className="flex gap-1.5">
-              {user?.role === "admin" && (
-                <Link
-                  href="/usuarios"
-                  className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-white/10 px-2 py-1.5 text-[.7rem] font-semibold text-white/85 transition hover:bg-white/18 hover:text-white"
-                >
-                  <UsersRound className="h-3.5 w-3.5 text-[#fae890]" />
-                  Usuarios
-                </Link>
-              )}
-              <button
-                onClick={() => {
-                  void logout().finally(goToLogin);
-                }}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-white/10 px-2 py-1.5 text-[.7rem] font-semibold text-white/85 transition hover:bg-white/18 hover:text-white"
-              >
-                <LogOut className="h-3.5 w-3.5 text-[#fae890]" />
-                Salir
-              </button>
-            </div>
-          </div>
-        </div>
+        <SidebarBody
+          progress={progress}
+          user={sidebarUser}
+          onNavigate={openExplanation}
+          onLogout={handleLogout}
+        />
       </aside>
+      <MobileNavDrawer
+        open={mobileNav}
+        onClose={closeMobileNav}
+        progress={progress}
+        user={sidebarUser}
+        onNavigate={href => {
+          closeMobileNav();
+          openExplanation(href);
+        }}
+        onLogout={handleLogout}
+      />
       <div className="min-w-0 flex-1">
         <header className="sticky top-0 z-30 border-b border-[#eadfe4] bg-[#f7f4f2]/95 px-5 py-4 backdrop-blur lg:px-9">
           <div className="mx-auto flex max-w-[1500px] items-center gap-4">
@@ -652,35 +564,15 @@ export default function Home() {
                 <ArrowRight className="min-[430px]:ml-1 h-3.5 w-3.5" />
               </Button>
               <button
-                className="grid h-9 w-9 place-items-center rounded-full border border-[#e7dde1] lg:hidden"
-                onClick={() => setMobileNav(!mobileNav)}
+                className="grid h-9 w-9 place-items-center rounded-full border border-[#e7dde1] transition hover:border-[#602249] hover:text-[#602249] lg:hidden"
+                onClick={() => setMobileNav(true)}
                 aria-label="Abrir menú"
+                aria-expanded={mobileNav}
               >
-                {mobileNav ? (
-                  <X className="h-4 w-4" />
-                ) : (
-                  <Menu className="h-4 w-4" />
-                )}
+                <Menu className="h-4 w-4" />
               </button>
             </div>
           </div>
-          {mobileNav && (
-            <nav className="mx-auto mt-3 flex max-w-[1500px] gap-2 overflow-x-auto pb-1 lg:hidden">
-              {nav.map(([label, href]) => (
-                <a
-                  key={label as string}
-                  onClick={() => {
-                    setMobileNav(false);
-                    openExplanation(href as string);
-                  }}
-                  href={href as string}
-                  className="shrink-0 rounded-full bg-white px-3 py-2 text-xs shadow-sm"
-                >
-                  {label as string}
-                </a>
-              ))}
-            </nav>
-          )}
         </header>
         <main className="mx-auto max-w-[1500px] px-5 py-7 lg:px-9 lg:py-9">
           <DailyDesk
@@ -1734,52 +1626,6 @@ const qualityItems = [
   "Los claims tienen validación de cliente, legal o especialista cuando aplica.",
 ];
 
-function BrandMark() {
-  return (
-    <div className="flex items-center gap-3">
-      <div className="brand-window">
-        <BrandSymbol className="h-11 w-11" />
-      </div>
-      <div className="leading-[.9] tracking-[-.045em]">
-        <div className="text-[1.05rem] font-light">
-          el<span className="font-bold">conejo</span>
-        </div>
-        <div className="text-[1.05rem] font-light">
-          del<span className="font-bold">sombrero</span>
-        </div>
-        <div className="mt-1 text-[.7rem] font-medium tracking-[.18em] text-[#fae890]">
-          COPY CHECK
-        </div>
-      </div>
-    </div>
-  );
-}
-function BrandSymbol({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 64 64"
-      className={className}
-      aria-label="Símbolo Conejo Copy Check"
-      role="img"
-    >
-      <path
-        d="M47 16A24 24 0 1 0 50 43"
-        fill="none"
-        stroke="#602249"
-        strokeWidth="7"
-        strokeLinecap="round"
-      />
-      <path
-        d="M42 23A15 15 0 1 0 44 39"
-        fill="none"
-        stroke="#051a2a"
-        strokeWidth="5"
-        strokeLinecap="round"
-      />
-      <circle cx="46" cy="20" r="5" fill="#8fa8ba" />
-    </svg>
-  );
-}
 function SectionHeading({
   code,
   title,

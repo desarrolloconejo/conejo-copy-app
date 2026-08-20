@@ -73,14 +73,21 @@ describe("hashPassword / verifyPassword", () => {
   );
 
   it(
-    "normalises equivalent unicode so an accent typed two ways still matches",
+    "matches the same password typed in either unicode form",
     async () => {
-      // "contraseña" with a precomposed ñ versus n + combining tilde.
-      const digest = await hashPassword("contraseña");
-      await expect(
-        verifyPassword("contraña".replace("ñ", "ñ"), digest)
-      ).resolves.toBe(false);
-      await expect(verifyPassword("contraseña", digest)).resolves.toBe(true);
+      // Written with escapes on purpose: the two forms of "contraseña" are
+      // byte-different but visually identical, and editors, formatters and
+      // bundlers all normalise source files silently. Spelling them out keeps
+      // the test testing what it claims.
+      const precomposed = "contraseña"; // ñ as a single code point
+      const decomposed = "contraseña"; // n + combining tilde
+
+      expect(precomposed).not.toBe(decomposed);
+
+      const digest = await hashPassword(precomposed);
+      await expect(verifyPassword(decomposed, digest)).resolves.toBe(true);
+      await expect(verifyPassword(precomposed, digest)).resolves.toBe(true);
+      await expect(verifyPassword("contrasena", digest)).resolves.toBe(false);
     },
     SLOW
   );
