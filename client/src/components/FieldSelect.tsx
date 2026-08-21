@@ -77,7 +77,14 @@ export function FieldSelect({
           // Matches the closed box instead of growing to the longest option,
           // which pushed the panel across the sidebar.
           "w-[var(--radix-select-trigger-width)]",
-          "max-h-72 rounded-[0.9rem] border-[#e7dde1] bg-white p-1.5 text-[#051a2a]",
+          // No padding of its own: the viewport inside carries a minimum
+          // width equal to the trigger, so any padding here pushes the rows
+          // out of the panel and leaves the highlight off-centre.
+          "max-h-72 rounded-[0.9rem] border-[#e7dde1] bg-white p-0 text-[#051a2a]",
+          // The viewport carries a minimum width equal to the trigger, which
+          // ignores this panel border and shifts every row a couple of pixels
+          // right, leaving the highlight off-centre.
+          "[&_[data-slot=select-viewport]]:min-w-0",
           "shadow-[0_18px_48px_rgba(50,19,39,0.16)]"
         )}
       >

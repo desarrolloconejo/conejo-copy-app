@@ -1,5 +1,14 @@
 import React, { useEffect, useMemo, useState, type ReactNode } from "react";
 import { LOGIN_PATH } from "@/const";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { FieldSelect } from "@/components/FieldSelect";
 import { MobileNavDrawer, SidebarBody } from "@/components/AppSidebar";
 import { BrandSymbol } from "@/components/BrandLockup";
@@ -23,6 +32,7 @@ import {
   History,
   LayoutTemplate,
   LogOut,
+  Maximize2,
   Menu,
   MessageCircleMore,
   PenLine,
@@ -990,12 +1000,23 @@ export default function Home() {
                   card would leave a large dead area beside it. */}
               <div className="rounded-[1.5rem] border-t-4 border-[#315166] bg-[#051a2a] p-6 text-white surface-shadow xl:sticky xl:top-24">
                 <p className="eyebrow text-[#8fa8ba]">Ficha para edición</p>
-                {/* A pasted string with no spaces cannot wrap on its own and
-                    would push a horizontal scrollbar across the card, so it is
-                    allowed to break mid-word and only the vertical axis scrolls. */}
-                <pre className="mt-4 max-h-[520px] overflow-x-hidden overflow-y-auto [overflow-wrap:anywhere] whitespace-pre-wrap text-xs leading-5 text-white/80">
-                  {productionText()}
-                </pre>
+                {/* One element per line, each cut with an ellipsis. Wrapping
+                    would make the card grow with whatever was typed; here the
+                    height depends only on how many rows the sheet has, and the
+                    full text stays one click away. */}
+                <div className="sheet-scroll mt-4 max-h-[calc(100vh-21rem)] overflow-x-hidden overflow-y-auto pr-1 font-mono text-xs leading-5 text-white/80">
+                  {productionText()
+                    .split("\n")
+                    .map((line, index) => (
+                      <p
+                        key={index}
+                        className="truncate"
+                        title={line || undefined}
+                      >
+                        {line || "\u00A0"}
+                      </p>
+                    ))}
+                </div>
                 <Button
                   onClick={saveProduction}
                   disabled={saveCopy.isPending}
@@ -1004,6 +1025,37 @@ export default function Home() {
                   <ClipboardCheck className="mr-2 h-4 w-4" />
                   Guardar en historial
                 </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <button className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 px-4 py-2.5 text-xs font-semibold text-white/80 transition hover:border-white/35 hover:text-white">
+                      <Maximize2 className="h-3.5 w-3.5 text-[#8fa8ba]" />
+                      Ver ficha completa
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl border-[#1d3547] bg-[#051a2a] text-white">
+                    <DialogHeader>
+                      <DialogTitle className="text-white">
+                        Ficha de producción
+                      </DialogTitle>
+                      <DialogDescription className="text-white/60">
+                        El texto completo, sin recortes. Cópialo tal cual para
+                        edición.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <pre className="sheet-scroll max-h-[62vh] overflow-x-hidden overflow-y-auto [overflow-wrap:anywhere] rounded-xl bg-white/5 p-4 text-xs leading-5 whitespace-pre-wrap text-white/85">
+                      {productionText()}
+                    </pre>
+                    <DialogFooter>
+                      <Button
+                        onClick={copyProduction}
+                        className="rounded-xl bg-[#315166] text-white hover:bg-[#244357]"
+                      >
+                        <ClipboardCheck className="mr-2 h-4 w-4" />
+                        Copiar ficha
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
           </section>
@@ -1265,7 +1317,7 @@ export default function Home() {
               modelo contrastado contra resultados. Úsala como lista de
               comprobación, no como oráculo.
             </div>
-            <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_.9fr]">
+            <div className="mt-6 grid items-start gap-6 xl:grid-cols-[1fr_.9fr]">
               <div className="rounded-[1.5rem] bg-white p-6 surface-shadow">
                 <Field
                   label="Hook hablado"
