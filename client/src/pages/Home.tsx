@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState, type ReactNode } from "react";
 import { LOGIN_PATH } from "@/const";
+import { FieldSelect } from "@/components/FieldSelect";
 import { MobileNavDrawer, SidebarBody } from "@/components/AppSidebar";
 import { BrandSymbol } from "@/components/BrandLockup";
 import { Link } from "wouter";
@@ -768,23 +769,26 @@ export default function Home() {
                 <div className="grid gap-5 md:grid-cols-2">
                   <Field label="Cliente" hint="Necesario para guardar.">
                     <div className="flex">
-                      <select
+                      <FieldSelect
                         value={clientId}
-                        onChange={e =>
-                          e.target.value === "__new__"
+                        onChange={value =>
+                          value === "__new__"
                             ? openClientCreator()
-                            : setClientId(e.target.value)
+                            : setClientId(value)
                         }
-                        className="field field-select min-w-0 flex-1 rounded-r-none border-r-0"
-                      >
-                        <option value="">Selecciona un cliente</option>
-                        {clientsQuery.data?.map(client => (
-                          <option key={client.id} value={client.id}>
-                            {client.name} · {client.sector}
-                          </option>
-                        ))}
-                        <option value="__new__">＋ Añadir cliente nuevo</option>
-                      </select>
+                        className="min-w-0 flex-1 rounded-r-none border-r-0"
+                        options={[
+                          { value: "", label: "Selecciona un cliente" },
+                          ...(clientsQuery.data ?? []).map(client => ({
+                            value: String(client.id),
+                            label: `${client.name} · ${client.sector}`,
+                          })),
+                          {
+                            value: "__new__",
+                            label: "＋ Añadir cliente nuevo",
+                          },
+                        ]}
+                      />
                       <button
                         type="button"
                         onClick={openClientCreator}
@@ -797,16 +801,17 @@ export default function Home() {
                     </div>
                   </Field>
                   <Field label="Objetivo" hint={`Métrica: ${detail.metric}`}>
-                    <select
+                    <FieldSelect
                       value={form.objective}
-                      onChange={e => update("objective", e.target.value)}
-                      className="field field-select"
-                    >
-                      <option value="">Elegir…</option>
-                      {objectives.map(item => (
-                        <option key={item}>{item}</option>
-                      ))}
-                    </select>
+                      onChange={value => update("objective", value)}
+                      options={[
+                        { value: "", label: "Elegir…" },
+                        ...objectives.map(item => ({
+                          value: item,
+                          label: item,
+                        })),
+                      ]}
+                    />
                   </Field>
                   <Field
                     label="Audiencia y momento"
@@ -1889,33 +1894,26 @@ export function TrendReferencesPanel({
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Plataforma" hint="Origen">
-            <select
+            <FieldSelect
               value={draft.platform}
-              onChange={event =>
-                setDraft({ ...draft, platform: event.target.value })
-              }
-              className="field field-select"
-            >
-              <option>TikTok</option>
-              <option>Instagram Reels</option>
-              <option>YouTube Shorts</option>
-              <option>Otra</option>
-            </select>
+              onChange={value => setDraft({ ...draft, platform: value })}
+              options={[
+                { value: "TikTok", label: "TikTok" },
+                { value: "Instagram Reels", label: "Instagram Reels" },
+                { value: "YouTube Shorts", label: "YouTube Shorts" },
+                { value: "Otra", label: "Otra" },
+              ]}
+            />
           </Field>
           <Field label="Territorio" hint="Intención">
-            <select
+            <FieldSelect
               value={draft.territory}
-              onChange={event =>
-                setDraft({ ...draft, territory: event.target.value })
-              }
-              className="field field-select"
-            >
-              {Object.entries(territoryLabels).map(([id, label]) => (
-                <option key={id} value={id}>
-                  {id} · {label}
-                </option>
-              ))}
-            </select>
+              onChange={value => setDraft({ ...draft, territory: value })}
+              options={Object.entries(territoryLabels).map(([id, label]) => ({
+                value: id,
+                label: `${id} · ${label}`,
+              }))}
+            />
           </Field>
         </div>
         <Field label="Fuente" hint="Enlace opcional">
@@ -1958,31 +1956,31 @@ export function TrendReferencesPanel({
             {references.length === 1 ? "referencia" : "referencias"}
           </p>
           <div className="flex flex-wrap gap-2">
-            <select
+            <FieldSelect
               aria-label="Filtrar referencias por plataforma"
               value={platform}
-              onChange={event => setPlatform(event.target.value)}
-              className="field field-select h-9 w-auto min-w-36 py-1 text-xs"
-            >
-              {platforms.map(item => (
-                <option key={item} value={item}>
-                  {item === "all" ? "Todas las plataformas" : item}
-                </option>
-              ))}
-            </select>
-            <select
+              onChange={setPlatform}
+              size="sm"
+              className="w-auto min-w-36"
+              options={platforms.map((item: string) => ({
+                value: item,
+                label: item === "all" ? "Todas las plataformas" : item,
+              }))}
+            />
+            <FieldSelect
               aria-label="Filtrar referencias por territorio"
               value={territory}
-              onChange={event => setTerritory(event.target.value)}
-              className="field field-select h-9 w-auto min-w-36 py-1 text-xs"
-            >
-              <option value="all">Todos los territorios</option>
-              {Object.entries(territoryLabels).map(([id, label]) => (
-                <option key={id} value={id}>
-                  {id} · {label}
-                </option>
-              ))}
-            </select>
+              onChange={setTerritory}
+              size="sm"
+              className="w-auto min-w-36"
+              options={[
+                { value: "all", label: "Todos los territorios" },
+                ...Object.entries(territoryLabels).map(([id, label]) => ({
+                  value: id,
+                  label: `${id} · ${label}`,
+                })),
+              ]}
+            />
           </div>
         </div>
         <div className="relative mt-3">
@@ -2272,23 +2270,23 @@ function DailyDesk(props: any) {
                     column gutter, so the pair occupies the cell like any
                     other field and reads as one control. */}
                 <div className="flex">
-                  <select
+                  <FieldSelect
                     value={currentClientId}
-                    onChange={event =>
-                      event.target.value === "__new__"
+                    onChange={value =>
+                      value === "__new__"
                         ? onNewClient()
-                        : onClientSelect(event.target.value)
+                        : onClientSelect(value)
                     }
-                    className="field field-select min-w-0 flex-1 rounded-r-none border-r-0 bg-white text-[#051a2a]"
-                  >
-                    <option value="">Selecciona una cuenta</option>
-                    {clients.map((client: any) => (
-                      <option key={client.id} value={client.id}>
-                        {client.name} · {client.sector}
-                      </option>
-                    ))}
-                    <option value="__new__">＋ Añadir cliente nuevo</option>
-                  </select>
+                    className="min-w-0 flex-1 rounded-r-none border-r-0 bg-white text-[#051a2a]"
+                    options={[
+                      { value: "", label: "Selecciona una cuenta" },
+                      ...clients.map((client: any) => ({
+                        value: String(client.id),
+                        label: `${client.name} · ${client.sector}`,
+                      })),
+                      { value: "__new__", label: "＋ Añadir cliente nuevo" },
+                    ]}
+                  />
                   <button
                     type="button"
                     onClick={onNewClient}
@@ -2305,16 +2303,15 @@ function DailyDesk(props: any) {
                   <Target className="h-3.5 w-3.5 text-[#8fa8ba]" />
                   Objetivo de la pieza
                 </span>
-                <select
+                <FieldSelect
                   value={objective}
-                  onChange={event => onObjectiveSelect(event.target.value)}
-                  className="field field-select bg-white text-[#051a2a]"
-                >
-                  <option value="">Selecciona un objetivo</option>
-                  {objectives.map(item => (
-                    <option key={item}>{item}</option>
-                  ))}
-                </select>
+                  onChange={onObjectiveSelect}
+                  className="bg-white text-[#051a2a]"
+                  options={[
+                    { value: "", label: "Selecciona un objetivo" },
+                    ...objectives.map(item => ({ value: item, label: item })),
+                  ]}
+                />
               </label>
             </div>
             <div className="mt-5 flex flex-wrap gap-3">
@@ -2824,28 +2821,27 @@ function HistorySection(props: any) {
               </Button>
             </div>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <select
+              <FieldSelect
                 value={clientFilter}
-                onChange={e => setClientFilter(e.target.value)}
-                className="field field-select"
-              >
-                <option value="all">Todos los clientes</option>
-                {clients.map((client: any) => (
-                  <option key={client.id} value={client.id}>
-                    {client.name}
-                  </option>
-                ))}
-              </select>
-              <select
+                onChange={setClientFilter}
+                options={[
+                  { value: "all", label: "Todos los clientes" },
+                  ...clients.map((client: any) => ({
+                    value: String(client.id),
+                    label: client.name,
+                  })),
+                ]}
+              />
+              <FieldSelect
                 value={statusFilter}
-                onChange={e => setStatusFilter(e.target.value)}
-                className="field field-select"
-              >
-                <option value="all">Todos los estados</option>
-                <option value="draft">Borrador</option>
-                <option value="published">Publicado</option>
-                <option value="analyzed">Analizado</option>
-              </select>
+                onChange={setStatusFilter}
+                options={[
+                  { value: "all", label: "Todos los estados" },
+                  { value: "draft", label: "Borrador" },
+                  { value: "published", label: "Publicado" },
+                  { value: "analyzed", label: "Analizado" },
+                ]}
+              />
             </div>
             {showCreator && (
               <div className="mt-3 grid gap-3 rounded-xl bg-[#f1f5f6] p-3 sm:grid-cols-[1fr_1fr_auto]">
@@ -3109,20 +3105,17 @@ export function RulesSection(props: any) {
                   label="Cliente (opcional)"
                   hint="Tiene prioridad sobre sector."
                 >
-                  <select
+                  <FieldSelect
                     value={draft.clientId}
-                    onChange={e =>
-                      setDraft({ ...draft, clientId: e.target.value })
-                    }
-                    className="field field-select"
-                  >
-                    <option value="">Aplicar por sector</option>
-                    {clients.map((client: any) => (
-                      <option key={client.id} value={client.id}>
-                        {client.name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={value => setDraft({ ...draft, clientId: value })}
+                    options={[
+                      { value: "", label: "Aplicar por sector" },
+                      ...clients.map((client: any) => ({
+                        value: String(client.id),
+                        label: client.name,
+                      })),
+                    ]}
+                  />
                 </Field>
                 <Field
                   label="Sector (opcional)"
