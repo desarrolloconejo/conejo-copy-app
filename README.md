@@ -15,8 +15,9 @@ El auditor es determinista: nueve controles sobre listas de expresiones y patron
 | Datos y migraciones | `drizzle/` | Esquema MySQL y migraciones. |
 | Tipos compartidos | `shared/` | Contratos y constantes comunes. |
 | Criterio editorial | `client/src/lib/hookManual.ts` | Las 42 plantillas de hook y la función de auditoría. |
-| Pruebas | `**/*.test.ts(x)` | 45 pruebas unitarias y de guardas de acceso. |
+| Pruebas | `**/*.test.ts(x)` | 47 pruebas unitarias y de guardas de acceso. |
 | Smoke autenticado | `scripts/smoke.mjs` | Comprobación de extremo a extremo en navegador. |
+| Referencia | `docs/` | Marca, dirección de diseño, modelo de datos y evidencia de QA histórica. |
 
 ## Requisitos
 
@@ -68,7 +69,7 @@ Los datos operativos se aíslan por `ownerId`: cada persona solo ve sus clientes
 ## Comprobaciones
 
 ```bash
-pnpm test    # 45 pruebas
+pnpm test    # 47 pruebas
 pnpm check   # tipos
 pnpm build   # compilación
 node scripts/smoke.mjs tu@email.com "tu contraseña"   # navegador, con la app levantada
