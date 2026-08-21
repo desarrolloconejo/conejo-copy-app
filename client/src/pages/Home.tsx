@@ -767,7 +767,7 @@ export default function Home() {
               <div className="rounded-[1.5rem] bg-white p-5 surface-shadow sm:p-7">
                 <div className="grid gap-5 md:grid-cols-2">
                   <Field label="Cliente" hint="Necesario para guardar.">
-                    <div className="flex gap-2">
+                    <div className="flex">
                       <select
                         value={clientId}
                         onChange={e =>
@@ -775,7 +775,7 @@ export default function Home() {
                             ? openClientCreator()
                             : setClientId(e.target.value)
                         }
-                        className="field field-select"
+                        className="field field-select min-w-0 flex-1 rounded-r-none border-r-0"
                       >
                         <option value="">Selecciona un cliente</option>
                         {clientsQuery.data?.map(client => (
@@ -785,14 +785,15 @@ export default function Home() {
                         ))}
                         <option value="__new__">＋ Añadir cliente nuevo</option>
                       </select>
-                      <Button
+                      <button
+                        type="button"
                         onClick={openClientCreator}
-                        variant="outline"
-                        className="h-12 w-12 shrink-0 rounded-xl p-0"
                         aria-label="Añadir cliente nuevo"
+                        title="Añadir cliente nuevo"
+                        className="flex h-12 w-11 shrink-0 items-center justify-center rounded-r-[0.9rem] border border-[#e7dde1] bg-white text-[#315166] transition hover:bg-[#eef4f7]"
                       >
                         <Plus className="h-4 w-4" />
-                      </Button>
+                      </button>
                     </div>
                   </Field>
                   <Field label="Objetivo" hint={`Métrica: ${detail.metric}`}>
@@ -874,6 +875,7 @@ export default function Home() {
                   <Field
                     label="Insert-Titulo"
                     hint={`${insertTitleCount}/6 palabras`}
+                    className="flex h-full flex-col"
                   >
                     <input
                       value={form.overlay}
@@ -881,7 +883,7 @@ export default function Home() {
                       className="field"
                       placeholder="Tres pasos, no diez"
                     />
-                    <div className="mt-3 rounded-xl bg-[#051a2a] p-4 text-white">
+                    <div className="mt-3 flex flex-1 flex-col justify-center rounded-xl bg-[#051a2a] p-4 text-white">
                       <p className="eyebrow text-[#8fa8ba]">Vista en mudo</p>
                       <p className="mt-1 text-lg font-semibold">
                         {form.overlay || "El núcleo aparece aquí."}
@@ -979,7 +981,9 @@ export default function Home() {
                   </Button>
                 </div>
               </div>
-              <div className="rounded-[1.5rem] border-t-4 border-[#315166] bg-[#051a2a] p-6 text-white surface-shadow">
+              {/* Follows the scroll: the form column is far taller, and a fixed
+                  card would leave a large dead area beside it. */}
+              <div className="rounded-[1.5rem] border-t-4 border-[#315166] bg-[#051a2a] p-6 text-white surface-shadow xl:sticky xl:top-24">
                 <p className="eyebrow text-[#8fa8ba]">Ficha para edición</p>
                 <pre className="mt-4 max-h-[520px] overflow-auto whitespace-pre-wrap text-xs leading-5 text-white/80">
                   {productionText()}
@@ -1747,13 +1751,15 @@ function Field({
   label,
   hint,
   children,
+  className = "",
 }: {
   label: string;
   hint: string;
   children: ReactNode;
+  className?: string;
 }) {
   return (
-    <label className="block">
+    <label className={`block ${className}`}>
       {/* Baseline alignment plus tabular figures keep the row steady while a
           live word counter changes width as the user types. */}
       <span className="mb-2 flex items-baseline justify-between gap-3">
@@ -2262,7 +2268,10 @@ function DailyDesk(props: any) {
                   <Building2 className="h-3.5 w-3.5 text-[#8fa8ba]" />
                   Cliente de esta entrega
                 </span>
-                <div className="flex gap-2">
+                {/* The button sits inside the field silhouette instead of the
+                    column gutter, so the pair occupies the cell like any
+                    other field and reads as one control. */}
+                <div className="flex">
                   <select
                     value={currentClientId}
                     onChange={event =>
@@ -2270,7 +2279,7 @@ function DailyDesk(props: any) {
                         ? onNewClient()
                         : onClientSelect(event.target.value)
                     }
-                    className="field field-select bg-white text-[#051a2a]"
+                    className="field field-select min-w-0 flex-1 rounded-r-none border-r-0 bg-white text-[#051a2a]"
                   >
                     <option value="">Selecciona una cuenta</option>
                     {clients.map((client: any) => (
@@ -2280,15 +2289,15 @@ function DailyDesk(props: any) {
                     ))}
                     <option value="__new__">＋ Añadir cliente nuevo</option>
                   </select>
-                  {/* Matches the field height so the pair reads as one row. */}
-                  <Button
+                  <button
+                    type="button"
                     onClick={onNewClient}
-                    variant="outline"
-                    className="h-12 w-12 shrink-0 rounded-xl border-white/25 bg-transparent p-0 text-white hover:bg-white/10 hover:text-white"
                     aria-label="Añadir cliente"
+                    title="Añadir cliente"
+                    className="flex h-12 w-11 shrink-0 items-center justify-center rounded-r-[0.9rem] border border-[#e7dde1] bg-white text-[#315166] transition hover:bg-[#eef4f7]"
                   >
                     <Plus className="h-4 w-4" />
-                  </Button>
+                  </button>
                 </div>
               </label>
               <label>
@@ -2808,7 +2817,7 @@ function HistorySection(props: any) {
               </div>
               <Button
                 onClick={() => setShowCreator(!showCreator)}
-                className="rounded-full bg-[#315166] text-white"
+                className="h-12 shrink-0 rounded-full bg-[#315166] px-5 text-white hover:bg-[#244357]"
               >
                 <Plus className="mr-1 h-4 w-4" />
                 Cliente
