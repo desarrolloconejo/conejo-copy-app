@@ -43,16 +43,40 @@ docker run -d --name conejo-mysql \
   -p 3307:3306 mysql:8
 ```
 
-## Producción
+## Producción con Docker
+
+Es la vía recomendada: el servidor solo necesita Docker con el plugin `compose`. Ni Node, ni pnpm, ni MySQL instalados en la máquina.
+
+```bash
+cp .env.example .env          # rellena JWT_SECRET y MYSQL_ROOT_PASSWORD
+docker compose build
+docker compose --profile tools run --rm migrate
+docker compose up -d
+docker compose exec app node dist/admin.js tu@email.com "Tu Nombre"
+```
+
+Las migraciones son un paso deliberado, bajo el perfil `tools`: un reinicio no debe poder alterar el esquema por su cuenta.
+
+La base **no publica puerto al host**: solo la alcanza la aplicación por la red interna del compose. Los datos viven en el volumen `db-data`, que sobrevive a `docker compose down` — pero no a `down -v`.
+
+### Copias de seguridad
+
+```bash
+docker compose exec db mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" conejo_copy_check > copia.sql
+```
+
+Hazlas antes de que haya trabajo real dentro, y prueba una restauración al menos una vez. El volumen por sí solo no es una copia de seguridad.
+
+## Producción sin Docker
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm drizzle-kit migrate
 pnpm build
+NODE_ENV=production pnpm migrate
 NODE_ENV=production pnpm start
 ```
 
-El build produce `dist/index.js` (servidor), `dist/public/` (cliente) y `dist/admin.js` (alta de administradores). El servidor **no** queda autocontenido: `esbuild` se ejecuta con `--packages=external`, así que la máquina de destino necesita las dependencias de producción instaladas.
+El build produce `dist/index.js` (servidor), `dist/public/` (cliente), `dist/migrate.js` y `dist/admin.js`. El servidor va empaquetado: la única dependencia que necesita instalada es `mysql2`, que resuelve módulos en tiempo de ejecución y no sobrevive al empaquetado.
 
 ## Autenticación y cuentas
 

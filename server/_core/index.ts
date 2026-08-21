@@ -6,7 +6,7 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { assertEnv } from "./env";
-import { serveStatic, setupVite } from "./vite";
+import { serveStatic } from "./static";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -43,8 +43,11 @@ async function startServer() {
       createContext,
     })
   );
-  // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
+    // Imported here, not at the top: a static import would make the production
+    // process resolve Vite and its plugins on boot, forcing the whole build
+    // toolchain into the runtime image.
+    const { setupVite } = await import("./vite");
     await setupVite(app, server);
   } else {
     serveStatic(app);
