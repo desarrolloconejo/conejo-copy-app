@@ -8,6 +8,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import {
   ArrowRight,
+  Building2,
   Check,
   ChevronDown,
   ChevronRight,
@@ -773,7 +774,7 @@ export default function Home() {
                           ? openClientCreator()
                           : setClientId(e.target.value)
                       }
-                      className="field"
+                      className="field field-select"
                     >
                       <option value="">Selecciona un cliente</option>
                       {clientsQuery.data?.map(client => (
@@ -788,7 +789,7 @@ export default function Home() {
                     <select
                       value={form.objective}
                       onChange={e => update("objective", e.target.value)}
-                      className="field"
+                      className="field field-select"
                     >
                       <option value="">Elegir…</option>
                       {objectives.map(item => (
@@ -1877,7 +1878,7 @@ export function TrendReferencesPanel({
               onChange={event =>
                 setDraft({ ...draft, platform: event.target.value })
               }
-              className="field"
+              className="field field-select"
             >
               <option>TikTok</option>
               <option>Instagram Reels</option>
@@ -1891,7 +1892,7 @@ export function TrendReferencesPanel({
               onChange={event =>
                 setDraft({ ...draft, territory: event.target.value })
               }
-              className="field"
+              className="field field-select"
             >
               {Object.entries(territoryLabels).map(([id, label]) => (
                 <option key={id} value={id}>
@@ -1945,7 +1946,7 @@ export function TrendReferencesPanel({
               aria-label="Filtrar referencias por plataforma"
               value={platform}
               onChange={event => setPlatform(event.target.value)}
-              className="field h-9 min-w-36 py-1 text-xs"
+              className="field field-select h-9 w-auto min-w-36 py-1 text-xs"
             >
               {platforms.map(item => (
                 <option key={item} value={item}>
@@ -1957,7 +1958,7 @@ export function TrendReferencesPanel({
               aria-label="Filtrar referencias por territorio"
               value={territory}
               onChange={event => setTerritory(event.target.value)}
-              className="field h-9 min-w-36 py-1 text-xs"
+              className="field field-select h-9 w-auto min-w-36 py-1 text-xs"
             >
               <option value="all">Todos los territorios</option>
               {Object.entries(territoryLabels).map(([id, label]) => (
@@ -2247,45 +2248,37 @@ function DailyDesk(props: any) {
             </p>
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               <label>
-                <span className="mb-2 block text-xs font-semibold text-white/85">
+                <span className="mb-2 flex items-center gap-2 text-xs font-semibold text-white/85">
+                  <Building2 className="h-3.5 w-3.5 text-[#8fa8ba]" />
                   Cliente de esta entrega
                 </span>
-                <div className="flex gap-2">
-                  <select
-                    value={currentClientId}
-                    onChange={event =>
-                      event.target.value === "__new__"
-                        ? onNewClient()
-                        : onClientSelect(event.target.value)
-                    }
-                    className="field bg-white text-[#051a2a]"
-                  >
-                    <option value="">Selecciona una cuenta</option>
-                    {clients.map((client: any) => (
-                      <option key={client.id} value={client.id}>
-                        {client.name} · {client.sector}
-                      </option>
-                    ))}
-                    <option value="__new__">＋ Añadir cliente nuevo</option>
-                  </select>
-                  <Button
-                    onClick={onNewClient}
-                    variant="outline"
-                    className="border-white/25 bg-transparent px-3 text-white hover:bg-white/10 hover:text-white"
-                    aria-label="Añadir cliente"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
+                <select
+                  value={currentClientId}
+                  onChange={event =>
+                    event.target.value === "__new__"
+                      ? onNewClient()
+                      : onClientSelect(event.target.value)
+                  }
+                  className="field field-select bg-white text-[#051a2a]"
+                >
+                  <option value="">Selecciona una cuenta</option>
+                  {clients.map((client: any) => (
+                    <option key={client.id} value={client.id}>
+                      {client.name} · {client.sector}
+                    </option>
+                  ))}
+                  <option value="__new__">＋ Añadir cliente nuevo</option>
+                </select>
               </label>
               <label>
-                <span className="mb-2 block text-xs font-semibold text-white/85">
+                <span className="mb-2 flex items-center gap-2 text-xs font-semibold text-white/85">
+                  <Target className="h-3.5 w-3.5 text-[#8fa8ba]" />
                   Objetivo de la pieza
                 </span>
                 <select
                   value={objective}
                   onChange={event => onObjectiveSelect(event.target.value)}
-                  className="field bg-white text-[#051a2a]"
+                  className="field field-select bg-white text-[#051a2a]"
                 >
                   <option value="">Selecciona un objetivo</option>
                   {objectives.map(item => (
@@ -2804,7 +2797,7 @@ function HistorySection(props: any) {
               <select
                 value={clientFilter}
                 onChange={e => setClientFilter(e.target.value)}
-                className="field"
+                className="field field-select"
               >
                 <option value="all">Todos los clientes</option>
                 {clients.map((client: any) => (
@@ -2816,7 +2809,7 @@ function HistorySection(props: any) {
               <select
                 value={statusFilter}
                 onChange={e => setStatusFilter(e.target.value)}
-                className="field"
+                className="field field-select"
               >
                 <option value="all">Todos los estados</option>
                 <option value="draft">Borrador</option>
@@ -3023,7 +3016,7 @@ export function RulesSection(props: any) {
         title="El estándar puede hablar el idioma de cada marca"
         body="Configura límites, preámbulos, fórmulas gastadas y términos de tensión por cliente o sector. El estándar de agencia es voz ≤ 12 e Insert-Titulo ≤ 6."
       />
-      <div className="grid gap-6 xl:grid-cols-[.75fr_1.25fr]">
+      <div className="grid items-start gap-6 xl:grid-cols-[.75fr_1.25fr]">
         <div className="rounded-[1.5rem] bg-[#321327] p-6 text-white surface-shadow">
           <p className="eyebrow text-[#8fa8ba]">Reglas activas</p>
           <div className="mt-4 space-y-3">
@@ -3091,7 +3084,7 @@ export function RulesSection(props: any) {
                     onChange={e =>
                       setDraft({ ...draft, clientId: e.target.value })
                     }
-                    className="field"
+                    className="field field-select"
                   >
                     <option value="">Aplicar por sector</option>
                     {clients.map((client: any) => (
@@ -3175,16 +3168,24 @@ export function RulesSection(props: any) {
                     className="field min-h-24"
                   />
                 </Field>
-                <label className="flex items-center gap-3 rounded-xl bg-[#e9f0f3] p-4 text-sm font-semibold text-[#315166]">
+                <label className="flex h-fit cursor-pointer items-start gap-3 self-start rounded-xl border border-[#d5e3e9] bg-[#e9f0f3] px-4 py-3.5 text-[#315166] transition hover:border-[#8fa8ba]">
                   <input
                     type="checkbox"
                     checked={draft.requireProof}
                     onChange={e =>
                       setDraft({ ...draft, requireProof: e.target.checked })
                     }
-                    className="h-4 w-4 accent-[#315166]"
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-[#315166]"
                   />
-                  Exigir prueba visible
+                  <span>
+                    <span className="block text-xs font-semibold">
+                      Exigir prueba visible
+                    </span>
+                    <span className="mt-1 block text-[11px] leading-4 text-[#5d7686]">
+                      La auditoría marcará la pieza si el hook promete algo que
+                      no se demuestra en pantalla.
+                    </span>
+                  </span>
                 </label>
               </div>
               <Button

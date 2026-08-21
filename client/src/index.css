@@ -328,6 +328,25 @@
     background: #fcfeff;
   }
 
+  /* A native select paints its own arrow, at its own size and colour, so a
+     row mixing selects and inputs never lines up. This drops the native
+     control and draws the same box as .field with a chevron that matches the
+     rest of the interface. */
+  .field-select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 2.6rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23617381%27 stroke-width=%272.2%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27m6 9 6 6 6-6%27/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+    background-size: 1.05rem;
+    cursor: pointer;
+  }
+
+  /* Keeps the chevron visible while the focus ring lightens the field. */
+  .field-select:focus {
+    background-color: #fcfeff;
+  }
   .field::placeholder {
     color: #9aa8b1;
   }
