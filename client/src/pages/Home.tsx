@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState, type ReactNode } from "react";
 import { LOGIN_PATH } from "@/const";
+import { describeError } from "@/lib/errors";
 import {
   Dialog,
   DialogContent,
@@ -271,12 +272,16 @@ export default function Home() {
       setClientDraft({ name: "", sector: "" });
       toast.success("Cliente añadido y seleccionado.");
     },
+    onError: error =>
+      toast.error(describeError(error, "No se pudo crear el cliente.")),
   });
   const saveCopy = trpc.copyHistory.create.useMutation({
     onSuccess: () => {
       utils.copyHistory.list.invalidate();
       toast.success("Ficha guardada en el historial.");
     },
+    onError: error =>
+      toast.error(describeError(error, "No se pudo guardar la ficha.")),
   });
   const saveResult = trpc.copyHistory.saveResult.useMutation({
     onSuccess: () => {
@@ -285,6 +290,10 @@ export default function Home() {
       setResultForm(blankResult);
       toast.success("Resultados registrados.");
     },
+    onError: error =>
+      toast.error(
+        describeError(error, "No se pudieron registrar los resultados.")
+      ),
   });
   const createRule = trpc.auditRules.create.useMutation({
     onSuccess: () => {
@@ -292,6 +301,8 @@ export default function Home() {
       setRuleDraft(current => ({ ...current, label: "" }));
       toast.success("Regla personalizada guardada.");
     },
+    onError: error =>
+      toast.error(describeError(error, "No se pudo guardar la regla.")),
   });
   const createTrendReference = trpc.trendReferences.create.useMutation({
     onSuccess: () => {
@@ -299,7 +310,8 @@ export default function Home() {
       setTrendDraft(blankTrendReference);
       toast.success("Referencia de tendencia guardada.");
     },
-    onError: error => toast.error(error.message),
+    onError: error =>
+      toast.error(describeError(error, "No se pudo guardar la referencia.")),
   });
 
   useEffect(() => {
