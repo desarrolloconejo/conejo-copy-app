@@ -51,7 +51,10 @@ export function FieldSelect({
         size={size}
         aria-label={ariaLabel}
         className={cn(
-          "field flex w-full items-center justify-between gap-2 text-left whitespace-normal",
+          "field flex w-full items-center justify-between gap-2 overflow-hidden text-left",
+          // The box has a fixed height: a long label has to be cut, not wrapped,
+          // or it spills over the label above and the field below.
+          "[&>span]:min-w-0 [&>span]:truncate",
           // The shadcn trigger ships its own radius, padding and height. The
           // height sits behind a data-attribute selector, which outweighs a
           // plain utility, so it has to be overridden through the same
@@ -69,7 +72,11 @@ export function FieldSelect({
       </SelectTrigger>
 
       <SelectContent
+        align="start"
         className={cn(
+          // Matches the closed box instead of growing to the longest option,
+          // which pushed the panel across the sidebar.
+          "w-[var(--radix-select-trigger-width)]",
           "max-h-72 rounded-[0.9rem] border-[#e7dde1] bg-white p-1.5 text-[#051a2a]",
           "shadow-[0_18px_48px_rgba(50,19,39,0.16)]"
         )}
@@ -78,8 +85,10 @@ export function FieldSelect({
           <SelectItem
             key={option.value}
             value={option.value}
+            title={option.label}
             className={cn(
-              "rounded-lg px-2.5 py-2 text-sm",
+              "rounded-lg py-2 pr-8 pl-2.5 text-sm",
+              "[&>span:last-child]:min-w-0 [&>span:last-child]:truncate",
               "focus:bg-[#f3e9ef] focus:text-[#602249]",
               "data-[state=checked]:bg-[#602249] data-[state=checked]:text-white"
             )}

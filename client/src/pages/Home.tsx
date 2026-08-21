@@ -990,7 +990,10 @@ export default function Home() {
                   card would leave a large dead area beside it. */}
               <div className="rounded-[1.5rem] border-t-4 border-[#315166] bg-[#051a2a] p-6 text-white surface-shadow xl:sticky xl:top-24">
                 <p className="eyebrow text-[#8fa8ba]">Ficha para edición</p>
-                <pre className="mt-4 max-h-[520px] overflow-auto whitespace-pre-wrap text-xs leading-5 text-white/80">
+                {/* A pasted string with no spaces cannot wrap on its own and
+                    would push a horizontal scrollbar across the card, so it is
+                    allowed to break mid-word and only the vertical axis scrolls. */}
+                <pre className="mt-4 max-h-[520px] overflow-x-hidden overflow-y-auto [overflow-wrap:anywhere] whitespace-pre-wrap text-xs leading-5 text-white/80">
                   {productionText()}
                 </pre>
                 <Button
