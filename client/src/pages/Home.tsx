@@ -79,7 +79,10 @@ type TrendReferenceDraft = {
   insight: string;
   tags: string;
 };
-type TrendReferenceRecord = Omit<TrendReferenceDraft, "insertTitle" | "sourceUrl"> & {
+type TrendReferenceRecord = Omit<
+  TrendReferenceDraft,
+  "insertTitle" | "sourceUrl"
+> & {
   id: number;
   insertTitle: string | null;
   sourceUrl: string | null;
@@ -123,7 +126,8 @@ export function filterTrendReferences(
 ) {
   const query = filters.search.toLowerCase().trim();
   return references.filter(item => {
-    const searchable = `${item.spoken} ${item.insertTitle ?? ""} ${item.insight} ${item.tags} ${item.platform} ${item.territory}`.toLowerCase();
+    const searchable =
+      `${item.spoken} ${item.insertTitle ?? ""} ${item.insight} ${item.tags} ${item.platform} ${item.territory}`.toLowerCase();
     return (
       (filters.platform === "all" || item.platform === filters.platform) &&
       (filters.territory === "all" || item.territory === filters.territory) &&
@@ -131,8 +135,15 @@ export function filterTrendReferences(
     );
   });
 }
-export function applyTrendReference(form: CopyForm, reference: Pick<TrendReferenceRecord, "spoken" | "insertTitle">): CopyForm {
-  return { ...form, spoken: reference.spoken, overlay: reference.insertTitle ?? "" };
+export function applyTrendReference(
+  form: CopyForm,
+  reference: Pick<TrendReferenceRecord, "spoken" | "insertTitle">
+): CopyForm {
+  return {
+    ...form,
+    spoken: reference.spoken,
+    overlay: reference.insertTitle ?? "",
+  };
 }
 const objectives = [
   "Alcance",
@@ -199,7 +210,8 @@ export default function Home() {
   const [trendSearch, setTrendSearch] = useState("");
   const [trendPlatform, setTrendPlatform] = useState("all");
   const [trendTerritory, setTrendTerritory] = useState("all");
-  const [trendDraft, setTrendDraft] = useState<TrendReferenceDraft>(blankTrendReference);
+  const [trendDraft, setTrendDraft] =
+    useState<TrendReferenceDraft>(blankTrendReference);
   const [clientId, setClientId] = useState("");
   const [showClientCreator, setShowClientCreator] = useState(false);
   const [clientDraft, setClientDraft] = useState({ name: "", sector: "" });
@@ -321,7 +333,11 @@ export default function Home() {
     () =>
       filterTrendReferences(
         (trendReferencesQuery.data ?? []) as TrendReferenceRecord[],
-        { search: trendSearch, platform: trendPlatform, territory: trendTerritory }
+        {
+          search: trendSearch,
+          platform: trendPlatform,
+          territory: trendTerritory,
+        }
       ),
     [trendReferencesQuery.data, trendPlatform, trendTerritory, trendSearch]
   );
@@ -385,8 +401,10 @@ export default function Home() {
   };
   const saveTrendReference = () => {
     if (!ensureAuth()) return;
-    if (!trendDraft.spoken.trim()) return toast.error("Escribe el hook observado.");
-    if (!trendDraft.insight.trim()) return toast.error("Explica por qué funciona esta referencia.");
+    if (!trendDraft.spoken.trim())
+      return toast.error("Escribe el hook observado.");
+    if (!trendDraft.insight.trim())
+      return toast.error("Explica por qué funciona esta referencia.");
     createTrendReference.mutate({
       ...trendDraft,
       insertTitle: trendDraft.insertTitle.trim() || undefined,
@@ -615,19 +633,44 @@ export default function Home() {
             active={form.objective}
             onSelect={objective => update("objective", objective)}
           />
-          <section id="ventana" className="window-arcs relative overflow-hidden rounded-[2rem] bg-[#602249] px-6 py-6 text-white surface-shadow sm:px-10">
+          <section
+            id="ventana"
+            className="window-arcs relative overflow-hidden rounded-[2rem] bg-[#602249] px-6 py-6 text-white surface-shadow sm:px-10"
+          >
             <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="eyebrow text-[#8fa8ba]">La Ventana / manual de hooks</p>
-                <h1 className="mt-2 text-2xl font-bold tracking-[-.045em] sm:text-3xl">Un hook es una decisión completa.</h1>
+                <p className="eyebrow text-[#8fa8ba]">
+                  La Ventana / manual de hooks
+                </p>
+                <h1 className="mt-2 text-2xl font-bold tracking-[-.045em] sm:text-3xl">
+                  Un hook es una decisión completa.
+                </h1>
               </div>
-              <button type="button" onClick={() => toggleSection("ventana")} aria-expanded={Boolean(openSections.ventana)} aria-controls="ventana-content" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-white/20 bg-white/8 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/15">
-                {openSections.ventana ? "Ocultar introducción" : "Ver introducción"}
-                <ChevronDown className={`h-4 w-4 transition-transform ${openSections.ventana ? "rotate-180" : ""}`} />
+              <button
+                type="button"
+                onClick={() => toggleSection("ventana")}
+                aria-expanded={Boolean(openSections.ventana)}
+                aria-controls="ventana-content"
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-white/20 bg-white/8 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/15"
+              >
+                {openSections.ventana
+                  ? "Ocultar introducción"
+                  : "Ver introducción"}
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform ${openSections.ventana ? "rotate-180" : ""}`}
+                />
               </button>
             </div>
-            <div id="ventana-content" hidden={!openSections.ventana} className="relative mt-6 grid items-center gap-7 xl:grid-cols-[1.2fr_.8fr]">
-              <p className="max-w-xl text-sm leading-6 text-white/80 sm:text-base">Guion, primer fotograma, Insert-Titulo, prueba y montaje trabajan en la misma ventana de atención. Este manual reúne el proceso para producirlos y el criterio para revisarlos.</p>
+            <div
+              id="ventana-content"
+              hidden={!openSections.ventana}
+              className="relative mt-6 grid items-center gap-7 xl:grid-cols-[1.2fr_.8fr]"
+            >
+              <p className="max-w-xl text-sm leading-6 text-white/80 sm:text-base">
+                Guion, primer fotograma, Insert-Titulo, prueba y montaje
+                trabajan en la misma ventana de atención. Este manual reúne el
+                proceso para producirlos y el criterio para revisarlos.
+              </p>
               <RetentionCurve />
             </div>
           </section>
@@ -992,7 +1035,9 @@ export default function Home() {
                 onUse={item => {
                   setForm(current => applyTrendReference(current, item));
                   setHasAudited(false);
-                  document.getElementById("canvas")?.scrollIntoView({ behavior: "smooth" });
+                  document
+                    .getElementById("canvas")
+                    ?.scrollIntoView({ behavior: "smooth" });
                 }}
                 onLogin={goToLogin}
               />
@@ -1663,7 +1708,11 @@ export function CollapsibleSection({
   return (
     <section id={id} className="scroll-mt-24 pt-14">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <SectionHeading code={code} title={title} body={open ? body : undefined} />
+        <SectionHeading
+          code={code}
+          title={title}
+          body={open ? body : undefined}
+        />
         <button
           type="button"
           onClick={onToggle}
@@ -1757,81 +1806,246 @@ export function TrendReferencesPanel({
   onUse: (reference: TrendReferenceRecord) => void;
   onLogin: () => void;
 }) {
-  const platforms = ["all", "TikTok", "Instagram Reels", "YouTube Shorts", "Otra"];
+  const platforms = [
+    "all",
+    "TikTok",
+    "Instagram Reels",
+    "YouTube Shorts",
+    "Otra",
+  ];
   return (
-    <section aria-label="Referencias de tendencia" className="rounded-[1.35rem] border border-[#d4e0e5] bg-[#f7fbfc] p-5 sm:p-6">
+    <section
+      aria-label="Referencias de tendencia"
+      className="rounded-[1.35rem] border border-[#d4e0e5] bg-[#f7fbfc] p-5 sm:p-6"
+    >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="eyebrow text-[#315166]">Referencias de tendencia</p>
-          <h3 className="mt-1 text-xl font-bold">Guarda lo que vale la pena adaptar.</h3>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#526a79]">Registra un hook observado y el motivo por el que funciona. Se conserva como referencia del equipo, no como texto para copiar.</p>
+          <h3 className="mt-1 text-xl font-bold">
+            Guarda lo que vale la pena adaptar.
+          </h3>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#526a79]">
+            Registra un hook observado y el motivo por el que funciona. Se
+            conserva como referencia del equipo, no como texto para copiar.
+          </p>
         </div>
-        {!isAuthenticated && <Button onClick={onLogin} variant="outline" className="rounded-full text-xs">Iniciar sesión para guardar</Button>}
+        {!isAuthenticated && (
+          <Button
+            onClick={onLogin}
+            variant="outline"
+            className="rounded-full text-xs"
+          >
+            Iniciar sesión para guardar
+          </Button>
+        )}
       </div>
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <Field label="Hook observado" hint="La apertura que quieres conservar">
-          <textarea value={draft.spoken} onChange={event => setDraft({ ...draft, spoken: event.target.value })} className="field min-h-24" placeholder="La frase, pregunta o escena de apertura…" />
+          <textarea
+            value={draft.spoken}
+            onChange={event =>
+              setDraft({ ...draft, spoken: event.target.value })
+            }
+            className="field min-h-24"
+            placeholder="La frase, pregunta o escena de apertura…"
+          />
         </Field>
         <Field label="Por qué funciona" hint="Tensión, prueba o montaje">
-          <textarea value={draft.insight} onChange={event => setDraft({ ...draft, insight: event.target.value })} className="field min-h-24" placeholder="Ej.: abre con contraste y muestra la prueba antes del segundo tres." />
+          <textarea
+            value={draft.insight}
+            onChange={event =>
+              setDraft({ ...draft, insight: event.target.value })
+            }
+            className="field min-h-24"
+            placeholder="Ej.: abre con contraste y muestra la prueba antes del segundo tres."
+          />
         </Field>
         <Field label="Insert-Titulo" hint="Opcional">
-          <input value={draft.insertTitle} onChange={event => setDraft({ ...draft, insertTitle: event.target.value })} className="field" placeholder="El núcleo breve que aparece en pantalla" />
+          <input
+            value={draft.insertTitle}
+            onChange={event =>
+              setDraft({ ...draft, insertTitle: event.target.value })
+            }
+            className="field"
+            placeholder="El núcleo breve que aparece en pantalla"
+          />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Plataforma" hint="Origen">
-            <select value={draft.platform} onChange={event => setDraft({ ...draft, platform: event.target.value })} className="field">
-              <option>TikTok</option><option>Instagram Reels</option><option>YouTube Shorts</option><option>Otra</option>
+            <select
+              value={draft.platform}
+              onChange={event =>
+                setDraft({ ...draft, platform: event.target.value })
+              }
+              className="field"
+            >
+              <option>TikTok</option>
+              <option>Instagram Reels</option>
+              <option>YouTube Shorts</option>
+              <option>Otra</option>
             </select>
           </Field>
           <Field label="Territorio" hint="Intención">
-            <select value={draft.territory} onChange={event => setDraft({ ...draft, territory: event.target.value })} className="field">
-              {Object.entries(territoryLabels).map(([id, label]) => <option key={id} value={id}>{id} · {label}</option>)}
+            <select
+              value={draft.territory}
+              onChange={event =>
+                setDraft({ ...draft, territory: event.target.value })
+              }
+              className="field"
+            >
+              {Object.entries(territoryLabels).map(([id, label]) => (
+                <option key={id} value={id}>
+                  {id} · {label}
+                </option>
+              ))}
             </select>
           </Field>
         </div>
         <Field label="Fuente" hint="Enlace opcional">
-          <input value={draft.sourceUrl} onChange={event => setDraft({ ...draft, sourceUrl: event.target.value })} className="field" type="url" placeholder="https://…" />
+          <input
+            value={draft.sourceUrl}
+            onChange={event =>
+              setDraft({ ...draft, sourceUrl: event.target.value })
+            }
+            className="field"
+            type="url"
+            placeholder="https://…"
+          />
         </Field>
         <Field label="Etiquetas" hint="Separadas por comas">
-          <input value={draft.tags} onChange={event => setDraft({ ...draft, tags: event.target.value })} className="field" placeholder="antes/después, precio, tutorial" />
+          <input
+            value={draft.tags}
+            onChange={event => setDraft({ ...draft, tags: event.target.value })}
+            className="field"
+            placeholder="antes/después, precio, tutorial"
+          />
         </Field>
       </div>
       <div className="mt-5 flex flex-wrap items-center gap-3">
-        <Button onClick={onSave} disabled={saving} className="rounded-full bg-[#315166] text-white hover:bg-[#244357]"><Plus className="mr-2 h-4 w-4" />Guardar referencia</Button>
-        <p className="text-xs leading-5 text-[#617381]">Conserva el mecanismo, pero reescribe las palabras para cada cliente.</p>
+        <Button
+          onClick={onSave}
+          disabled={saving}
+          className="rounded-full bg-[#315166] text-white hover:bg-[#244357]"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Guardar referencia
+        </Button>
+        <p className="text-xs leading-5 text-[#617381]">
+          Conserva el mecanismo, pero reescribe las palabras para cada cliente.
+        </p>
       </div>
       <div className="mt-8 border-t border-[#d4e0e5] pt-6">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <p className="eyebrow text-[#315166]">Banco del equipo · {references.length} {references.length === 1 ? "referencia" : "referencias"}</p>
+          <p className="eyebrow text-[#315166]">
+            Banco del equipo · {references.length}{" "}
+            {references.length === 1 ? "referencia" : "referencias"}
+          </p>
           <div className="flex flex-wrap gap-2">
-            <select aria-label="Filtrar referencias por plataforma" value={platform} onChange={event => setPlatform(event.target.value)} className="field h-9 min-w-36 py-1 text-xs">
-              {platforms.map(item => <option key={item} value={item}>{item === "all" ? "Todas las plataformas" : item}</option>)}
+            <select
+              aria-label="Filtrar referencias por plataforma"
+              value={platform}
+              onChange={event => setPlatform(event.target.value)}
+              className="field h-9 min-w-36 py-1 text-xs"
+            >
+              {platforms.map(item => (
+                <option key={item} value={item}>
+                  {item === "all" ? "Todas las plataformas" : item}
+                </option>
+              ))}
             </select>
-            <select aria-label="Filtrar referencias por territorio" value={territory} onChange={event => setTerritory(event.target.value)} className="field h-9 min-w-36 py-1 text-xs">
+            <select
+              aria-label="Filtrar referencias por territorio"
+              value={territory}
+              onChange={event => setTerritory(event.target.value)}
+              className="field h-9 min-w-36 py-1 text-xs"
+            >
               <option value="all">Todos los territorios</option>
-              {Object.entries(territoryLabels).map(([id, label]) => <option key={id} value={id}>{id} · {label}</option>)}
+              {Object.entries(territoryLabels).map(([id, label]) => (
+                <option key={id} value={id}>
+                  {id} · {label}
+                </option>
+              ))}
             </select>
           </div>
         </div>
         <div className="relative mt-3">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#71818c]" />
-          <input value={search} onChange={event => setSearch(event.target.value)} className="field pl-10" placeholder="Buscar por hook, etiqueta, plataforma o aprendizaje…" />
+          <input
+            value={search}
+            onChange={event => setSearch(event.target.value)}
+            className="field pl-10"
+            placeholder="Buscar por hook, etiqueta, plataforma o aprendizaje…"
+          />
         </div>
         <div className="mt-4 grid gap-3">
-          {loading ? <p className="text-sm text-[#617381]">Cargando referencias…</p> : references.length ? references.map(reference => (
-            <article key={reference.id} className="grid gap-4 rounded-xl border-l-4 border-[#315166] bg-white p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-              <div>
-                <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-[#315166]"><span>{reference.platform}</span><span>·</span><span>{reference.territory} · {territoryLabels[reference.territory as keyof typeof territoryLabels] ?? "Referencia"}</span></div>
-                <p className="mt-2 font-semibold leading-6">“{reference.spoken}”</p>
-                {reference.insertTitle && <span className="mt-3 inline-block rounded-full bg-[#051a2a] px-3 py-1.5 text-xs font-semibold text-white">{reference.insertTitle}</span>}
-                <p className="mt-3 text-sm leading-6 text-[#526a79]"><b className="text-[#315166]">Lectura:</b> {reference.insight}</p>
-                {reference.tags && <p className="mt-2 text-xs text-[#71818c]">#{reference.tags.split(",").map(tag => tag.trim()).filter(Boolean).join("  #")}</p>}
-                {reference.sourceUrl && <a className="mt-3 inline-block text-xs font-semibold text-[#315166] underline underline-offset-4" href={reference.sourceUrl} target="_blank" rel="noreferrer">Abrir fuente</a>}
-              </div>
-              <Button onClick={() => onUse(reference)} variant="outline" className="rounded-full text-xs">Usar como punto de partida <ChevronRight className="ml-1 h-3.5 w-3.5" /></Button>
-            </article>
-          )) : <p className="rounded-xl border border-dashed border-[#c5d7df] bg-white px-4 py-5 text-sm leading-6 text-[#637481]">Aún no hay referencias guardadas. Añade un hook que esté funcionando y registra qué mecanismo vale la pena adaptar.</p>}
+          {loading ? (
+            <p className="text-sm text-[#617381]">Cargando referencias…</p>
+          ) : references.length ? (
+            references.map(reference => (
+              <article
+                key={reference.id}
+                className="grid gap-4 rounded-xl border-l-4 border-[#315166] bg-white p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start"
+              >
+                <div>
+                  <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-[#315166]">
+                    <span>{reference.platform}</span>
+                    <span>·</span>
+                    <span>
+                      {reference.territory} ·{" "}
+                      {territoryLabels[
+                        reference.territory as keyof typeof territoryLabels
+                      ] ?? "Referencia"}
+                    </span>
+                  </div>
+                  <p className="mt-2 font-semibold leading-6">
+                    “{reference.spoken}”
+                  </p>
+                  {reference.insertTitle && (
+                    <span className="mt-3 inline-block rounded-full bg-[#051a2a] px-3 py-1.5 text-xs font-semibold text-white">
+                      {reference.insertTitle}
+                    </span>
+                  )}
+                  <p className="mt-3 text-sm leading-6 text-[#526a79]">
+                    <b className="text-[#315166]">Lectura:</b>{" "}
+                    {reference.insight}
+                  </p>
+                  {reference.tags && (
+                    <p className="mt-2 text-xs text-[#71818c]">
+                      #
+                      {reference.tags
+                        .split(",")
+                        .map(tag => tag.trim())
+                        .filter(Boolean)
+                        .join("  #")}
+                    </p>
+                  )}
+                  {reference.sourceUrl && (
+                    <a
+                      className="mt-3 inline-block text-xs font-semibold text-[#315166] underline underline-offset-4"
+                      href={reference.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Abrir fuente
+                    </a>
+                  )}
+                </div>
+                <Button
+                  onClick={() => onUse(reference)}
+                  variant="outline"
+                  className="rounded-full text-xs"
+                >
+                  Usar como punto de partida{" "}
+                  <ChevronRight className="ml-1 h-3.5 w-3.5" />
+                </Button>
+              </article>
+            ))
+          ) : (
+            <p className="rounded-xl border border-dashed border-[#c5d7df] bg-white px-4 py-5 text-sm leading-6 text-[#637481]">
+              Aún no hay referencias guardadas. Añade un hook que esté
+              funcionando y registra qué mecanismo vale la pena adaptar.
+            </p>
+          )}
         </div>
       </div>
     </section>
@@ -2205,11 +2419,17 @@ export function ObjectiveGuide({
             className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-[#d4e0e5] bg-[#f7fbfc] px-4 py-2 text-xs font-semibold text-[#315166] transition hover:bg-[#e9f0f3]"
           >
             {open ? "Ocultar guía" : "Ver guía"}
-            <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
+            <ChevronDown
+              className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`}
+            />
           </button>
         </div>
       </div>
-      <div id="guia-objetivos-contenido" hidden={!open} className="mt-5 grid gap-4 lg:grid-cols-3">
+      <div
+        id="guia-objetivos-contenido"
+        hidden={!open}
+        className="mt-5 grid gap-4 lg:grid-cols-3"
+      >
         {guides.map((guide, index) => (
           <button
             key={guide.id}
