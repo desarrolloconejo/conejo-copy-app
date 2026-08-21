@@ -48,12 +48,20 @@ export function FieldSelect({
   return (
     <Select value={value === "" ? undefined : value} onValueChange={onChange}>
       <SelectTrigger
+        size={size}
         aria-label={ariaLabel}
         className={cn(
           "field flex w-full items-center justify-between gap-2 text-left whitespace-normal",
+          // The shadcn trigger ships its own radius, padding and height. The
+          // height sits behind a data-attribute selector, which outweighs a
+          // plain utility, so it has to be overridden through the same
+          // variant; the rest are matched to .field so a row of mixed
+          // controls shares one silhouette.
+          "rounded-[0.9rem] px-[0.9rem]",
+          "data-[size=default]:h-12 data-[size=sm]:h-9",
           "data-[placeholder]:text-[#9aa8b1]",
           "focus-visible:border-[#8fa8ba] focus-visible:ring-[3px] focus-visible:ring-[#8fa8ba]/22",
-          size === "sm" ? "h-9 px-3 py-1 text-xs" : "h-12",
+          size === "sm" ? "px-3 py-1 text-xs" : "",
           className
         )}
       >
