@@ -767,23 +767,33 @@ export default function Home() {
               <div className="rounded-[1.5rem] bg-white p-5 surface-shadow sm:p-7">
                 <div className="grid gap-5 md:grid-cols-2">
                   <Field label="Cliente" hint="Necesario para guardar.">
-                    <select
-                      value={clientId}
-                      onChange={e =>
-                        e.target.value === "__new__"
-                          ? openClientCreator()
-                          : setClientId(e.target.value)
-                      }
-                      className="field field-select"
-                    >
-                      <option value="">Selecciona un cliente</option>
-                      {clientsQuery.data?.map(client => (
-                        <option key={client.id} value={client.id}>
-                          {client.name} · {client.sector}
-                        </option>
-                      ))}
-                      <option value="__new__">＋ Añadir cliente nuevo</option>
-                    </select>
+                    <div className="flex gap-2">
+                      <select
+                        value={clientId}
+                        onChange={e =>
+                          e.target.value === "__new__"
+                            ? openClientCreator()
+                            : setClientId(e.target.value)
+                        }
+                        className="field field-select"
+                      >
+                        <option value="">Selecciona un cliente</option>
+                        {clientsQuery.data?.map(client => (
+                          <option key={client.id} value={client.id}>
+                            {client.name} · {client.sector}
+                          </option>
+                        ))}
+                        <option value="__new__">＋ Añadir cliente nuevo</option>
+                      </select>
+                      <Button
+                        onClick={openClientCreator}
+                        variant="outline"
+                        className="h-12 w-12 shrink-0 rounded-xl p-0"
+                        aria-label="Añadir cliente nuevo"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </Field>
                   <Field label="Objetivo" hint={`Métrica: ${detail.metric}`}>
                     <select
@@ -2252,23 +2262,34 @@ function DailyDesk(props: any) {
                   <Building2 className="h-3.5 w-3.5 text-[#8fa8ba]" />
                   Cliente de esta entrega
                 </span>
-                <select
-                  value={currentClientId}
-                  onChange={event =>
-                    event.target.value === "__new__"
-                      ? onNewClient()
-                      : onClientSelect(event.target.value)
-                  }
-                  className="field field-select bg-white text-[#051a2a]"
-                >
-                  <option value="">Selecciona una cuenta</option>
-                  {clients.map((client: any) => (
-                    <option key={client.id} value={client.id}>
-                      {client.name} · {client.sector}
-                    </option>
-                  ))}
-                  <option value="__new__">＋ Añadir cliente nuevo</option>
-                </select>
+                <div className="flex gap-2">
+                  <select
+                    value={currentClientId}
+                    onChange={event =>
+                      event.target.value === "__new__"
+                        ? onNewClient()
+                        : onClientSelect(event.target.value)
+                    }
+                    className="field field-select bg-white text-[#051a2a]"
+                  >
+                    <option value="">Selecciona una cuenta</option>
+                    {clients.map((client: any) => (
+                      <option key={client.id} value={client.id}>
+                        {client.name} · {client.sector}
+                      </option>
+                    ))}
+                    <option value="__new__">＋ Añadir cliente nuevo</option>
+                  </select>
+                  {/* Matches the field height so the pair reads as one row. */}
+                  <Button
+                    onClick={onNewClient}
+                    variant="outline"
+                    className="h-12 w-12 shrink-0 rounded-xl border-white/25 bg-transparent p-0 text-white hover:bg-white/10 hover:text-white"
+                    aria-label="Añadir cliente"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </label>
               <label>
                 <span className="mb-2 flex items-center gap-2 text-xs font-semibold text-white/85">
