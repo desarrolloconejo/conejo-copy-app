@@ -1,6 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { TRPCClientError } from "@trpc/client";
+import { describeError } from "@/lib/errors";
 import { ArrowLeft, KeyRound, Search, UserPlus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "wouter";
@@ -35,11 +35,7 @@ export default function Users() {
   const usersQuery = trpc.users.list.useQuery(undefined, { retry: false });
 
   const showError = (caught: unknown) =>
-    toast.error(
-      caught instanceof TRPCClientError
-        ? caught.message
-        : "No se pudo completar la acción."
-    );
+    toast.error(describeError(caught, "No se pudo completar la acción."));
 
   const refresh = () => utils.users.list.invalidate();
 
@@ -234,11 +230,18 @@ export default function Users() {
         <form
           onSubmit={event => {
             event.preventDefault();
-            createUser.mutate({
-              email: draft.email.trim(),
-              name: draft.name.trim(),
-              role: draft.role,
-            });
+            const email = draft.email.trim();
+            const name = draft.name.trim();
+            // Answered here so an incomplete form does not need a round trip.
+            if (!email || !name) {
+              toast.error("Rellena el email y el nombre.");
+              return;
+            }
+            if (name.length < 2) {
+              toast.error("El nombre necesita al menos 2 caracteres.");
+              return;
+            }
+            createUser.mutate({ email, name, role: draft.role });
           }}
           className="mb-8 rounded-2xl border border-[#e6dfe3] bg-white p-5"
         >

@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { BrandLockup } from "@/components/BrandLockup";
 import { trpc } from "@/lib/trpc";
-import { TRPCClientError } from "@trpc/client";
+import { describeError } from "@/lib/errors";
 import { useState } from "react";
 import { useLocation } from "wouter";
 
@@ -23,11 +23,7 @@ export default function ChangePassword() {
       navigate("/");
     },
     onError: caught => {
-      setError(
-        caught instanceof TRPCClientError
-          ? caught.message
-          : "No se pudo cambiar la contraseña."
-      );
+      setError(describeError(caught, "No se pudo cambiar la contraseña."));
     },
   });
 

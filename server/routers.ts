@@ -29,11 +29,14 @@ import { signSession } from "./_core/session";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 
-const clientInput = z.object({ name: z.string().trim().min(2).max(120), sector: z.string().trim().min(2).max(120) });
+const clientInput = z.object({
+  name: z.string().trim().min(2, "El nombre del cliente necesita al menos 2 caracteres").max(120),
+  sector: z.string().trim().min(2, "El sector necesita al menos 2 caracteres").max(120),
+});
 const ruleInput = z.object({
   clientId: z.number().int().positive().optional(),
   sector: z.string().trim().max(120).optional(),
-  label: z.string().trim().min(2).max(120),
+  label: z.string().trim().min(2, "Ponle nombre a la regla").max(120),
   maxSpokenWords: z.number().int().min(3).max(30),
   maxOverlayWords: z.number().int().min(2).max(16),
   requireProof: z.boolean(),
@@ -42,18 +45,18 @@ const ruleInput = z.object({
   tensionTerms: z.string().trim().max(1200),
 });
 const copyInput = z.object({
-  clientId: z.number().int().positive(),
-  objective: z.string().trim().min(2).max(40),
-  platform: z.string().trim().min(2).max(40),
-  audience: z.string().trim().min(2).max(5000),
-  tension: z.string().trim().min(2).max(5000),
-  spoken: z.string().trim().min(2).max(1000),
+  clientId: z.number().int().positive("Elige un cliente antes de guardar"),
+  objective: z.string().trim().min(2, "Elige un objetivo").max(40),
+  platform: z.string().trim().min(2, "Elige una plataforma").max(40),
+  audience: z.string().trim().min(2, "Describe la audiencia y el momento").max(5000),
+  tension: z.string().trim().min(2, "Describe la tensión o el deseo").max(5000),
+  spoken: z.string().trim().min(2, "Escribe el hook hablado").max(1000),
   overlay: z.string().trim().max(1000),
   proof: z.string().trim().max(5000),
   firstFrame: z.string().trim().max(5000),
   cta: z.string().trim().max(1000),
-  auditScore: z.number().int().min(0).max(100),
-  primaryMetric: z.string().trim().min(2).max(80),
+  auditScore: z.number().int().min(0).max(100, "El score va de 0 a 100"),
+  primaryMetric: z.string().trim().min(2, "Indica la métrica principal").max(80),
   status: z.enum(["draft", "published", "analyzed"]),
 });
 const resultInput = z.object({
@@ -67,26 +70,26 @@ const resultInput = z.object({
   learning: z.string().trim().max(5000).optional(),
 });
 const trendReferenceInput = z.object({
-  spoken: z.string().trim().min(2).max(1000),
+  spoken: z.string().trim().min(2, "Escribe el hook de la referencia").max(1000),
   insertTitle: z.string().trim().max(250).optional(),
-  platform: z.string().trim().min(2).max(40),
-  territory: z.string().trim().min(1).max(60),
-  sourceUrl: z.string().trim().url().max(1000).optional(),
-  insight: z.string().trim().min(2).max(5000),
+  platform: z.string().trim().min(2, "Elige una plataforma").max(40),
+  territory: z.string().trim().min(1, "Elige un territorio").max(60),
+  sourceUrl: z.string().trim().url("El enlace no es una URL válida").max(1000).optional(),
+  insight: z.string().trim().min(2, "Explica por qué funciona").max(5000),
   tags: z.string().trim().max(500),
 });
 
 const credentialsInput = z.object({
-  email: z.string().trim().email().max(320),
-  password: z.string().min(1).max(200),
+  email: z.string().trim().email("Escribe un email válido").max(320),
+  password: z.string().min(1, "Escribe tu contraseña").max(200),
 });
 const newUserInput = z.object({
-  email: z.string().trim().email().max(320),
-  name: z.string().trim().min(2).max(160),
-  role: z.enum(["user", "admin"]),
+  email: z.string().trim().email("Escribe un email válido").max(320),
+  name: z.string().trim().min(2, "El nombre necesita al menos 2 caracteres").max(160),
+  role: z.enum(["user", "admin"], { message: "El rol debe ser redacción o administración" }),
 });
 const passwordChangeInput = z.object({
-  currentPassword: z.string().min(1).max(200),
+  currentPassword: z.string().min(1, "Escribe tu contraseña actual").max(200),
   newPassword: z.string().min(10, "La contraseña nueva necesita al menos 10 caracteres").max(200),
 });
 

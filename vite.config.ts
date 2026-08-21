@@ -21,6 +21,18 @@ export default defineConfig({
   server: {
     host: true,
     allowedHosts: ["localhost", "127.0.0.1"],
+    // Bind mounts from a Windows host do not deliver inotify events to the
+    // container, so file changes go unnoticed unless the watcher polls.
+    // Only the containerised dev environment sets this.
+    watch: process.env.VITE_USE_POLLING
+      ? {
+          usePolling: true,
+          // A tighter interval scans the tree often enough to burn half a core
+          // while idle; one second is still imperceptible when saving a file.
+          interval: 1000,
+          ignored: ["**/node_modules/**", "**/dist/**", "**/.git/**"],
+        }
+      : undefined,
     fs: {
       strict: true,
       deny: ["**/.*"],

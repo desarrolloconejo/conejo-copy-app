@@ -62,3 +62,26 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/trpc/auth.me').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
 CMD ["node", "dist/index.js"]
+
+
+# ---------------------------------------------------------------------------
+# Etapa de desarrollo
+#
+# La usa docker-compose.dev.yml. El código llega por bind mount desde el host,
+# no copiado, para que un cambio en el editor se vea al instante. node_modules
+# vive en un volumen aparte: el del host trae binarios de Windows que no
+# funcionan dentro de la imagen Linux.
+# ---------------------------------------------------------------------------
+FROM node:22-alpine AS dev
+
+WORKDIR /app
+RUN corepack enable
+
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+ENV NODE_ENV=development
+ENV PORT=3000
+EXPOSE 3000
+
+CMD ["pnpm", "dev"]

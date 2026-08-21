@@ -1,5 +1,5 @@
 import { trpc } from "@/lib/trpc";
-import { TRPCClientError } from "@trpc/client";
+import { describeError } from "@/lib/errors";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { BrandLockup } from "@/components/BrandLockup";
@@ -19,11 +19,7 @@ export default function Login() {
       navigate(user.mustChangePassword ? "/cambiar-contrasena" : "/");
     },
     onError: caught => {
-      setError(
-        caught instanceof TRPCClientError
-          ? caught.message
-          : "No se pudo iniciar sesión. Inténtalo de nuevo."
-      );
+      setError(describeError(caught, "No se pudo iniciar sesión. Inténtalo de nuevo."));
     },
   });
 
@@ -35,7 +31,20 @@ export default function Login() {
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
     setError("");
-    login.mutate({ email: email.trim(), password });
+
+    // Caught here so an empty form answers instantly instead of making a round
+    // trip only to come back with the same thing.
+    const trimmed = email.trim();
+    if (!trimmed) {
+      setError("Escribe tu email.");
+      return;
+    }
+    if (!password) {
+      setError("Escribe tu contraseña.");
+      return;
+    }
+
+    login.mutate({ email: trimmed, password });
   };
 
   return (

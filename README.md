@@ -43,6 +43,24 @@ docker run -d --name conejo-mysql \
   -p 3307:3306 mysql:8
 ```
 
+## Desarrollo en contenedores
+
+Es la forma recomendada de trabajar: el mismo entorno que se despliega, sin depender de lo que tengas instalado en la máquina.
+
+```bash
+cp .env.example .env          # basta con JWT_SECRET y MYSQL_ROOT_PASSWORD
+docker compose -f docker-compose.dev.yml up -d
+docker compose -f docker-compose.dev.yml exec app pnpm migrate
+docker compose -f docker-compose.dev.yml exec app pnpm create-admin tu@email.com "Tu Nombre" --password tucontrasena
+```
+
+Esta carpeta se monta dentro del contenedor: lo que guardes en el editor se recarga solo, tanto el cliente como el servidor. La base publica el puerto `3307`, así que puedes abrirla con cualquier cliente SQL.
+
+`node_modules` vive en un volumen aparte a propósito. El de tu carpeta trae binarios de Windows —`esbuild`, `rollup`— que no se ejecutan dentro de la imagen Linux.
+
+Los montajes desde Windows no entregan eventos de sistema de archivos al contenedor, así que los vigilantes sondean. El intervalo está en un segundo: con el valor por defecto, el contenedor consume medio núcleo en reposo.
+
+`--password` fija la contraseña y evita el cambio obligatorio del primer acceso. Úsalo solo en desarrollo: el valor queda en el historial del intérprete de comandos.
 ## Producción con Docker
 
 Es la vía recomendada: el servidor solo necesita Docker con el plugin `compose`. Ni Node, ni pnpm, ni MySQL instalados en la máquina.
