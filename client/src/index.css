@@ -114,7 +114,9 @@
   body {
     @apply bg-background text-foreground;
     font-family: "Poppins", sans-serif;
-    font-feature-settings: "ss01" 1, "ss02" 1;
+    font-feature-settings:
+      "ss01" 1,
+      "ss02" 1;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -184,8 +186,81 @@
 
   .window-arcs {
     background-image:
-      radial-gradient(circle at 100% 0%, transparent 0 9%, rgba(250, 232, 144, 0.28) 9.15% 9.4%, transparent 9.55% 16%, rgba(250, 232, 144, 0.18) 16.15% 16.35%, transparent 16.5% 23%, rgba(250, 232, 144, 0.12) 23.15% 23.35%, transparent 23.5%),
-      radial-gradient(circle at 100% 0%, transparent 0 30%, rgba(255,255,255,0.08) 30.15% 30.35%, transparent 30.5%);
+      radial-gradient(
+        circle at 100% 0%,
+        transparent 0 9%,
+        rgba(250, 232, 144, 0.28) 9.15% 9.4%,
+        transparent 9.55% 16%,
+        rgba(250, 232, 144, 0.18) 16.15% 16.35%,
+        transparent 16.5% 23%,
+        rgba(250, 232, 144, 0.12) 23.15% 23.35%,
+        transparent 23.5%
+      ),
+      radial-gradient(
+        circle at 100% 0%,
+        transparent 0 30%,
+        rgba(255, 255, 255, 0.08) 30.15% 30.35%,
+        transparent 30.5%
+      );
+  }
+
+  /* Sidebar nav: scrolls only when the viewport is short, and when it does the
+     scrollbar stays out of the way while a soft fade signals the cut. */
+  .nav-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(250, 232, 144, 0.28) transparent;
+  }
+
+  .nav-scroll::-webkit-scrollbar {
+    width: 4px;
+  }
+  .nav-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .nav-scroll::-webkit-scrollbar-thumb {
+    background: rgba(250, 232, 144, 0.28);
+    border-radius: 999px;
+  }
+  .nav-scroll:hover::-webkit-scrollbar-thumb {
+    background: rgba(250, 232, 144, 0.45);
+  }
+
+  /* Fades the bottom edge only: that is where hidden items are, and masking the
+     top would dim the first group label even when nothing overflows. */
+  /* Same idea as .nav-scroll, toned for the dark production card. */
+  .sheet-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(143, 168, 186, 0.35) transparent;
+  }
+
+  .sheet-scroll::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .sheet-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sheet-scroll::-webkit-scrollbar-thumb {
+    background: rgba(143, 168, 186, 0.35);
+    border-radius: 999px;
+  }
+
+  .sheet-scroll:hover::-webkit-scrollbar-thumb {
+    background: rgba(143, 168, 186, 0.55);
+  }
+
+  .nav-fade {
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      #000 calc(100% - 18px),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      #000 calc(100% - 18px),
+      transparent 100%
+    );
   }
 
   .brand-window {
@@ -195,8 +270,12 @@
     place-items: center;
     border: 1px solid rgba(250, 232, 144, 0.45);
     border-radius: 999px;
-    background: radial-gradient(circle at 67% 33%, #fae890 0 7%, transparent 8%), rgba(255, 255, 255, 0.07);
-    box-shadow: 0 0 0 7px rgba(250, 232, 144, 0.07), 0 0 0 15px rgba(250, 232, 144, 0.035);
+    background:
+      radial-gradient(circle at 67% 33%, #fae890 0 7%, transparent 8%),
+      rgba(255, 255, 255, 0.07);
+    box-shadow:
+      0 0 0 7px rgba(250, 232, 144, 0.07),
+      0 0 0 15px rgba(250, 232, 144, 0.035);
   }
 
   .attention-marker {
@@ -207,7 +286,9 @@
     border: 2px solid #602249;
     border-radius: 999px;
     background: #f7f4f2;
-    box-shadow: 0 0 0 6px #f7f4f2, 0 0 0 7px #eadfe4;
+    box-shadow:
+      0 0 0 6px #f7f4f2,
+      0 0 0 7px #eadfe4;
   }
 
   .attention-marker::before,
@@ -220,18 +301,35 @@
     inset: 6px;
   }
 
-  .attention-marker::after { inset: 12px; }
-  .attention-marker i { inset: 18px; border: 0; background: #fae890; }
-  .attention-marker b { position: absolute; right: -5px; bottom: -5px; height: 9px; width: 9px; border: 2px solid #f7f4f2; border-radius: 999px; background: #051a2a; }
+  .attention-marker::after {
+    inset: 12px;
+  }
+  .attention-marker i {
+    inset: 18px;
+    border: 0;
+    background: #fae890;
+  }
+  .attention-marker b {
+    position: absolute;
+    right: -5px;
+    bottom: -5px;
+    height: 9px;
+    width: 9px;
+    border: 2px solid #f7f4f2;
+    border-radius: 999px;
+    background: #051a2a;
+  }
 
   .dot-field {
-    background-image: radial-gradient(rgba(96, 34, 73, 0.18) 1px, transparent 1px);
+    background-image: radial-gradient(
+      rgba(96, 34, 73, 0.18) 1px,
+      transparent 1px
+    );
     background-size: 12px 12px;
   }
 
   .field {
     width: 100%;
-    resize: vertical;
     border: 1px solid #e7dde1;
     border-radius: 0.9rem;
     background: #ffffff;
@@ -240,7 +338,14 @@
     font-size: 0.875rem;
     line-height: 1.45;
     outline: none;
-    transition: border-color 160ms var(--ease-out, ease), box-shadow 160ms var(--ease-out, ease), background 160ms var(--ease-out, ease);
+    transition:
+      border-color 160ms var(--ease-out, ease),
+      box-shadow 160ms var(--ease-out, ease),
+      background 160ms var(--ease-out, ease);
+  }
+
+  textarea.field {
+    resize: vertical;
   }
 
   .field:focus {
@@ -249,11 +354,34 @@
     background: #fcfeff;
   }
 
-  .field::placeholder { color: #9aa8b1; }
+  /* A native select paints its own arrow, at its own size and colour, so a
+     row mixing selects and inputs never lines up. This drops the native
+     control and draws the same box as .field with a chevron that matches the
+     rest of the interface. */
+  .field-select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 2.6rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23617381%27 stroke-width=%272.2%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27m6 9 6 6 6-6%27/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+    background-size: 1.05rem;
+    cursor: pointer;
+  }
+
+  /* Keeps the chevron visible while the focus ring lightens the field. */
+  .field-select:focus {
+    background-color: #fcfeff;
+  }
+  .field::placeholder {
+    color: #9aa8b1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;

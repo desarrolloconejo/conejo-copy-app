@@ -1,17 +1,53 @@
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import ChangePassword from "@/pages/ChangePassword";
+import Login from "@/pages/Login";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import Users from "@/pages/Users";
+import type { ReactNode } from "react";
+import { Redirect, Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 
+/**
+ * Everything except /login sits behind a session. A user carrying a temporary
+ * password is funnelled to /cambiar-contrasena until they pick their own.
+ */
+function RequireAuth({ children }: { children: ReactNode }) {
+  const { user, loading } = useAuth();
+  const [location] = useLocation();
+
+  if (loading) return null;
+  if (!user) return <Redirect to="/login" />;
+  if (user.mustChangePassword && location !== "/cambiar-contrasena") {
+    return <Redirect to="/cambiar-contrasena" />;
+  }
+
+  return <>{children}</>;
+}
+
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
+      <Route path="/login" component={Login} />
+      <Route path="/cambiar-contrasena">
+        <RequireAuth>
+          <ChangePassword />
+        </RequireAuth>
+      </Route>
+      <Route path="/usuarios">
+        <RequireAuth>
+          <Users />
+        </RequireAuth>
+      </Route>
+      <Route path="/">
+        <RequireAuth>
+          <Home />
+        </RequireAuth>
+      </Route>
+      <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>

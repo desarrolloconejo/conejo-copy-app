@@ -1,0 +1,52 @@
+name: conejo-copy-check
+
+services:
+  db:
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?define MYSQL_ROOT_PASSWORD en .env}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-conejo_copy_check}
+    # Sin "ports": la base solo es alcanzable por la red interna del compose.
+    # Publicarla al host seria superficie de ataque sin ninguna ventaja.
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: mysql://root:${MYSQL_ROOT_PASSWORD}@db:3306/${MYSQL_DATABASE:-conejo_copy_check}
+    ports:
+      # Sin proxy inverso todavia: manten este puerto cerrado en el cortafuegos
+      # salvo para tu IP o tu VPN, porque las contrasenas viajan sin cifrar.
+      - "${APP_PORT:-3000}:3000"
+
+  # Paso deliberado, no automatico: "docker compose --profile tools run --rm migrate".
+  # Que un reinicio no pueda alterar el esquema por su cuenta.
+  migrate:
+    build: .
+    profiles: ["tools"]
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: mysql://root:${MYSQL_ROOT_PASSWORD}@db:3306/${MYSQL_DATABASE:-conejo_copy_check}
+    command: ["node", "dist/migrate.js"]
+
+volumes:
+  db-data:

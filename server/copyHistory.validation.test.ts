@@ -6,10 +6,11 @@ function authenticatedContext(): TrpcContext {
   return {
     user: {
       id: 1,
-      openId: "copy-check-user",
       name: "Copy Check User",
       email: "copy@example.com",
-      loginMethod: "manus",
+      passwordHash: "scrypt$32768$8$1$AAAA$AAAA",
+      isActive: true,
+      mustChangePassword: false,
       role: "user",
       createdAt: new Date(),
       updatedAt: new Date(),

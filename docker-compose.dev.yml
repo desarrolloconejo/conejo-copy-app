@@ -1,0 +1,62 @@
+# Entorno de desarrollo en contenedores.
+#
+#   docker compose -f docker-compose.dev.yml up
+#
+# El código se monta desde esta carpeta: lo que edites en el editor se recarga
+# dentro del contenedor. La base es la misma que usa la aplicación, y publica
+# su puerto para que puedas conectarte con un cliente SQL.
+name: conejo-dev
+
+services:
+  db:
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-conejo_dev}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-conejo_copy_check}
+    ports:
+      # Publicada a proposito: es una base de desarrollo y conviene poder
+      # inspeccionarla desde el host. En produccion no se publica.
+      - "${DB_PORT:-3307}:3306"
+    volumes:
+      - dev-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  app:
+    build:
+      context: .
+      target: dev
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: mysql://root:${MYSQL_ROOT_PASSWORD:-conejo_dev}@db:3306/${MYSQL_DATABASE:-conejo_copy_check}
+      JWT_SECRET: ${JWT_SECRET:?define JWT_SECRET en .env}
+      SESSION_TTL_DAYS: ${SESSION_TTL_DAYS:-30}
+      VITE_APP_TITLE: ${VITE_APP_TITLE:-Conejo Copy Check}
+      # Los montajes desde Windows no entregan eventos inotify al contenedor.
+      VITE_USE_POLLING: "1"
+      # tsx vigila el servidor con chokidar. Sin sondeo no ve los cambios del
+      # bind mount; con el intervalo por defecto se come medio nucleo en reposo.
+      CHOKIDAR_USEPOLLING: "1"
+      CHOKIDAR_INTERVAL: "1000"
+    volumes:
+      # Tu carpeta, tal cual. Editas aqui y el contenedor lo ve.
+      - .:/app
+      # Sombrea el node_modules del host: el suyo trae binarios de Windows
+      # (esbuild, rollup) que no se ejecutan dentro de la imagen Linux.
+      - dev-node-modules:/app/node_modules
+    ports:
+      - "${APP_DEV_PORT:-3000}:3000"
+
+volumes:
+  dev-db-data:
+  dev-node-modules:

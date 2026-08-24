@@ -11,15 +11,20 @@ export const users = mysqlTable("users", {
    * Use this for relations between tables.
    */
   id: int("id").autoincrement().primaryKey(),
-  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
-  openId: varchar("openId", { length: 64 }).notNull().unique(),
-  name: text("name"),
-  email: varchar("email", { length: 320 }),
-  loginMethod: varchar("loginMethod", { length: 64 }),
+  /** Login identifier. Stored lowercased so lookups are case-insensitive. */
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  /** Encoded scrypt digest. See server/auth/password.ts for the format. */
+  passwordHash: varchar("passwordHash", { length: 255 }).notNull(),
+  name: varchar("name", { length: 160 }).notNull(),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  /** Deactivated accounts keep their data but cannot sign in. */
+  isActive: boolean("isActive").notNull().default(true),
+  /** Set when an admin issues a temporary password. */
+  mustChangePassword: boolean("mustChangePassword").notNull().default(false),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-  lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
+  /** Null until the first successful sign-in. */
+  lastSignedIn: timestamp("lastSignedIn"),
 });
 
 export const clients = mysqlTable("clients", {

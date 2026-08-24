@@ -1,7 +1,6 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { auditRules, clients, copyRecords, copyResults, InsertUser, trendReferences, users } from "../drizzle/schema";
-import { ENV } from './_core/env';
+import { auditRules, clients, copyRecords, copyResults, trendReferences, users } from "../drizzle/schema";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -18,75 +17,99 @@ export async function getDb() {
   return _db;
 }
 
-export async function upsertUser(user: InsertUser): Promise<void> {
-  if (!user.openId) {
-    throw new Error("User openId is required for upsert");
-  }
-
+async function requireDb() {
   const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot upsert user: database not available");
-    return;
-  }
-
-  try {
-    const values: InsertUser = {
-      openId: user.openId,
-    };
-    const updateSet: Record<string, unknown> = {};
-
-    const textFields = ["name", "email", "loginMethod"] as const;
-    type TextField = (typeof textFields)[number];
-
-    const assignNullable = (field: TextField) => {
-      const value = user[field];
-      if (value === undefined) return;
-      const normalized = value ?? null;
-      values[field] = normalized;
-      updateSet[field] = normalized;
-    };
-
-    textFields.forEach(assignNullable);
-
-    if (user.lastSignedIn !== undefined) {
-      values.lastSignedIn = user.lastSignedIn;
-      updateSet.lastSignedIn = user.lastSignedIn;
-    }
-    if (user.role !== undefined) {
-      values.role = user.role;
-      updateSet.role = user.role;
-    } else if (user.openId === ENV.ownerOpenId) {
-      values.role = 'admin';
-      updateSet.role = 'admin';
-    }
-
-    if (!values.lastSignedIn) {
-      values.lastSignedIn = new Date();
-    }
-
-    if (Object.keys(updateSet).length === 0) {
-      updateSet.lastSignedIn = new Date();
-    }
-
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
-      set: updateSet,
-    });
-  } catch (error) {
-    console.error("[Database] Failed to upsert user:", error);
-    throw error;
-  }
+  if (!db) throw new Error("Database not available: check DATABASE_URL");
+  return db;
 }
 
-export async function getUserByOpenId(openId: string) {
-  const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot get user: database not available");
-    return undefined;
-  }
+/** Emails are compared lowercased so sign-in is not case-sensitive. */
+export const normalizeEmail = (email: string) => email.trim().toLowerCase();
 
-  const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+export type NewUser = {
+  email: string;
+  name: string;
+  passwordHash: string;
+  role?: "user" | "admin";
+  mustChangePassword?: boolean;
+};
 
-  return result.length > 0 ? result[0] : undefined;
+export async function getUserById(id: number) {
+  const db = await requireDb();
+  const rows = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return rows[0];
+}
+
+export async function getUserByEmail(email: string) {
+  const db = await requireDb();
+  const rows = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, normalizeEmail(email)))
+    .limit(1);
+  return rows[0];
+}
+
+export async function countUsers() {
+  const db = await requireDb();
+  const rows = await db.select({ id: users.id }).from(users);
+  return rows.length;
+}
+
+export async function createUser(input: NewUser) {
+  const db = await requireDb();
+  await db.insert(users).values({
+    email: normalizeEmail(input.email),
+    name: input.name,
+    passwordHash: input.passwordHash,
+    role: input.role ?? "user",
+    mustChangePassword: input.mustChangePassword ?? false,
+  });
+  return getUserByEmail(input.email);
+}
+
+export async function listUsers() {
+  const db = await requireDb();
+  return db
+    .select({
+      id: users.id,
+      email: users.email,
+      name: users.name,
+      role: users.role,
+      isActive: users.isActive,
+      mustChangePassword: users.mustChangePassword,
+      createdAt: users.createdAt,
+      lastSignedIn: users.lastSignedIn,
+    })
+    .from(users)
+    .orderBy(asc(users.id));
+}
+
+export async function setUserActive(id: number, isActive: boolean) {
+  const db = await requireDb();
+  await db.update(users).set({ isActive }).where(eq(users.id, id));
+  return getUserById(id);
+}
+
+export async function setUserRole(id: number, role: "user" | "admin") {
+  const db = await requireDb();
+  await db.update(users).set({ role }).where(eq(users.id, id));
+  return getUserById(id);
+}
+
+export async function setUserPassword(
+  id: number,
+  passwordHash: string,
+  mustChangePassword: boolean
+) {
+  const db = await requireDb();
+  await db.update(users).set({ passwordHash, mustChangePassword }).where(eq(users.id, id));
+  return getUserById(id);
+}
+
+export async function touchLastSignedIn(id: number) {
+  const db = await requireDb();
+  await db.update(users).set({ lastSignedIn: new Date() }).where(eq(users.id, id));
 }
 
 export type CopyRecordPayload = {
